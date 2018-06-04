@@ -172,7 +172,7 @@ PacketHandler = {
                 socket.end();
         });
         clients[client.id].hardware = packetContents[0];
-        send(socket, "ID", [client.hardware, "bengoshi", "69.420"], client.websocket); // TODO: Change these
+        send(socket, "ID", [client.hardware, "bengoshi", "v1"], client.websocket); // TODO: Change these
         if (players >= maxPlayers)
             socket.close();
         send(socket, "PN", [players, maxPlayers], client.websocket);
@@ -458,5 +458,5 @@ net.createServer((socket) => {
 var client = new net.Socket();
 client.connect(27016, "master.aceattorneyonline.com", () => {
     console.log("Master server connection established");
-    client.write(packetBuilder("SCC", [port, config.name, config.description, "bengoshi v0"]));
+    client.write(packetBuilder("SCC", [port, config.name, config.description, "bengoshi v1"]));
 });
