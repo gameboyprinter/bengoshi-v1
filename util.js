@@ -80,9 +80,9 @@ function send(socket, header, data, ws) {
 
 // Disconnects a client
 function cleanup(client, protocol) {
-    if (protocol.taken[client.char])
+    if (protocol.rooms[client.room].taken[client.char])
         protocol.players--;
-    protocol.taken[client.char] = 0;
+    protocol.rooms[client.room].taken[client.char] = 0;
     clients[client.id] = {};
 }
 

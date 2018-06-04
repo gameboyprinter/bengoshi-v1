@@ -8,31 +8,46 @@
   "description": "pls connect",
   "motd": "anime ass",
   "rooms": [
-    "Lobby",
-    "Case 1",
-    "Case 2",
-    "Case 3",
-    "~moderator"
-  ],
-  "backgrounds": [
-    "default",
-    "Anime",
-    "birthday",
-    "TouhouCourt",
-    "EnglishCourt"
+    {
+      "name": "Lobby",
+      "background": "default",
+      "BGLock": true,
+      "CELock": true,
+      "private": false
+    },
+    {
+      "name": "Case 1",
+      "background": "Anime",
+      "BGLock": true,
+      "CELock": true,
+      "private": false
+    },
+    {
+      "name": "Case 2",
+      "background": "birthday",
+      "BGLock": true,
+      "CELock": true,
+      "private": false
+    },
+    {
+      "name": "Case 3",
+      "background": "CountyCourt",
+      "BGLock": true,
+      "CELock": true,
+      "private": false
+    },
+    {
+      "name": "Moderator",
+      "background": "TouhouCourt",
+      "BGLock": true,
+      "CELock": true,
+      "private": true
+    }
   ],
   "bans": [
     {
       "ip": "8.8.8.8",
       "hwid": "example"
-    },
-    {
-      "ip": "::ffff:27.253.16.191",
-      "hwid": "1060996155"
-    },
-    {
-      "ip": "::ffff:49.188.11.6",
-      "hwid": "-1913449124"
     }
   ],
   "mods": [

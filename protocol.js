@@ -6,27 +6,35 @@ const cmds = require("./commands.js");
 
 // Game state
 // TODO: Room state objects
-var taken = [];
-var roomSongs = [];
-var musicIntervals = [];
-var evidenceLists = require('./evidence.json');
+var rooms = [];
 var players = 0;
 
-// Initialize variables
-for (var i = 0; i < config.characters.length; i++)
-    taken[i] = 0;
+// Initialize rooms
+var evidenceLists = require('./evidence.json');
 var initEvidence = evidenceLists.length != config.rooms.length;
 if(initEvidence)
     evidenceLists = [];
 for (var i = 0; i < config.rooms.length; i++){
-    roomSongs.push("");
     if(initEvidence)
         evidenceLists.push([]);
+    rooms[i] = config.rooms[i];
+    rooms[i].evidence = evidenceLists[i];
+    rooms[i].taken = Array.apply(null, Array(config.characters.length)).map(Number.prototype.valueOf,0);
+    rooms[i].song = "~stop.mp3";
 }
 
 // This function is called on an interval, per room, to loop music.
 function loopMusic(room) {
-    util.broadcast("MC", [roomSongs[room], -1], room);
+    util.broadcast("MC", [rooms[room].song, -1], room);
+}
+
+// Finds room by name
+function isRoom(name){
+    for(var i = 0; i < rooms.length; i++){
+        if(rooms[i].name == name)
+            return i;
+    }
+    return -1;
 }
 
 // Every FantaPacket is interpreted here
@@ -64,11 +72,12 @@ PacketHandler = {
     "RM": (packetContents, socket, client) => {
         var songNames = [];
         config.rooms.forEach((room) => {
-            if (room.charAt(0) == "#") {
+            if (room.private){
                 if (client.moderator)
-                    songNames.push(room);
-            } else
-                songNames.push(room);
+                    songNames.push(room.name);
+            }
+            else
+                songNames.push(room.name);
         });
         config.songs.forEach((song) => {
             songNames.push(song.name);
@@ -77,24 +86,26 @@ PacketHandler = {
     },
     // Request data (taken chars, oppass, loading done)
     "RD": (packetContents, socket, client) => {
-        util.send(socket, "CharsCheck", taken, client.websocket);
+        util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
         util.send(socket, "OPPASS", ["42"], client.websocket);
         util.send(socket, "DONE", [], client.websocket);
     },
     // Change character
     "CC": (packetContents, socket, client) => {
-        if (taken[packetContents[1]] == -1)
+        if (rooms[client.room].taken[packetContents[1]] == -1)
             return;
         if (client.char != undefined)
-            taken[client.char] = 0;
-        taken[packetContents[1]] = -1;
+            rooms[client.room].taken[client.char] = 0;
+        rooms[client.room].taken[packetContents[1]] = -1;
         client.char = packetContents[1];
-        util.send(socket, "PV", [client.id, "CID", client.char], client.websocket);
-        util.send(socket, "CT", ["Server", config.motd], client.websocket);
-        util.send(socket, "LE", evidenceLists[client.room], client.websocket);
-        if (roomSongs[0] != "")
-            util.send(socket, "MC", [roomSongs[client.room], -1], client.websocket);
-        util.send(socket, "BN", [config.backgrounds[client.room]], client.websocket);
+        util.send(socket, "PV", [client.id, "CID", client.char], client.websocket); // Char pick success
+        util.send(socket, "CT", ["Server", config.motd], client.websocket); // Send MOTD
+        util.send(socket, "LE", rooms[client.room].evidence, client.websocket); // Send evidence
+        util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket); // Send song
+        util.send(socket, "BN", [rooms[client.room].background], client.websocket); // Send background
+        if(client.software == "TNLIB"){
+            util.send(socket, "CT", ["Dear TNC User", "Consider using the vanilla client."], client.websocket);
+        }
         players++;
     },
     // Keepalive heartbeat
@@ -139,22 +150,34 @@ PacketHandler = {
             }
         });
         if (exists) {
-            roomSongs[client.room] = packetContents[0];
+            rooms[client.room].song = packetContents[0];
             util.broadcast("MC", packetContents, client.room);
-            clearInterval(musicIntervals[client.room]);
-            if (roomSongs[client.room] != "~stop.mp3")
-                musicIntervals[client.room] = setInterval(loopMusic, time, client.room);
+            clearInterval(rooms[client.room].roomInterval);
+            if (rooms[client.room].song != "~stop.mp3")
+                rooms[client.room].roomInterval = setInterval(loopMusic, time, client.room);
         }
         if (!exists) {
-            if (config.rooms.includes(packetContents[0])) {
-                client.room = config.rooms.indexOf(packetContents[0]);
+            var newRoom = isRoom(packetContents[0]);
+            if (newRoom != -1) {
+                if(rooms[newRoom].taken[client.char] == -1)
+                {
+                    var newChar = rooms[client.room].taken.indexOf(0);
+                    if(newChar == -1){
+                        util.send(socket, "CT", ["Server", "That room is full!"]);
+                        return;
+                    }
+                    client.char = newChar;
+                    util.send(socket, "PV", [client.id, "CID", client.char], client.websocket);
+                    util.send(socket, "CT", ["Server", "Your character was taken, so you have been assigned to " + config.characters[newChar]], client.websocket);
+                }
+                rooms[client.room].taken[client.char] = 0;
+                rooms[newRoom].taken[client.char] = -1;
+                client.room = newRoom;
                 util.send(socket, "CT", ["Server", "You moved to room number " + client.room + ", " + packetContents[0]], client.websocket);
-                util.send(socket, "BN", [config.backgrounds[client.room]], client.websocket);
-                util.send(socket, "LE", evidenceLists[client.room], client.websocket);
-                if (roomSongs[client.room] == "")
-                    util.send(socket, "MC", ["~stop.mp3", -1], client.websocket);
-                else
-                    util.send(socket, "MC", [roomSongs[client.room], -1], client.websocket);
+                util.send(socket, "BN", [rooms[client.room].background], client.websocket);
+                util.send(socket, "LE", rooms[client.room].evidence, client.websocket);
+                util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket);
+                util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
             }
         }
     },
@@ -194,11 +217,15 @@ PacketHandler = {
         evidenceLists[client.room][id] = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
         fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
         util.broadcast("LE", evidenceLists[client.room], client.room);
-    }
+    },
+    // Free character
+    "FC": (packetContents, socket, client) => {
+        taken[client.char] = 0;
+    } 
 };
 
 module.exports = {
     PacketHandler: PacketHandler,
-    taken: taken,
+    rooms: rooms,
     players: players
 };
