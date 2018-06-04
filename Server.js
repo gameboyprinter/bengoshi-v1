@@ -92,8 +92,10 @@ function getRandomInt(min, max) {
 function parseCmd(cmd, args, socket, client) {
     switch (cmd) {
         case "/mute":
-            if (!client.moderator)
+            if (!client.moderator) {
+                send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
                 break;
+            }
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/mute (player)"], client.websocket);
                 break;
@@ -110,8 +112,10 @@ function parseCmd(cmd, args, socket, client) {
             });
             break;
         case "/unmute":
-            if (!client.moderator)
+            if (!client.moderator) {
+                send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
                 break;
+            }
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/unmute (player)"], client.websocket);
                 break;
@@ -128,8 +132,10 @@ function parseCmd(cmd, args, socket, client) {
             });
             break;
         case "/ban":
-            if (!client.moderator)
+            if (!client.moderator) {
+                send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
                 break;
+            }
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/ban (player)"], client.websocket);
                 break;
@@ -151,8 +157,11 @@ function parseCmd(cmd, args, socket, client) {
             });
             break;
         case "/kick":
-            if (!client.moderator)
+
+            if (!client.moderator) {
+                send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
                 break;
+            }
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/kick (player)"], client.websocket);
                 break;
@@ -169,7 +178,24 @@ function parseCmd(cmd, args, socket, client) {
             });
             break;
         case "/pos":
-            send(client.socket, "CT", ["Server", "You are in Room " + client.room + ", " + config.rooms[client.room]]);
+            send(client.socket, "CT", ["Server", "You are in Room " + client.room + ", " + config.rooms[client.room]], client.websocket);
+            break;
+        case "/w":
+            if (args.length < 2) {
+                send(socket, "CT", ["Server", "/w (target) (words)"], client.websocket);
+                break;
+            }
+            config.characters.forEach((char) => {
+                if (char.toLowerCase() == args[0].toLowerCase()) {
+                    clients.forEach((mclient) => {
+                        if (mclient.char == config.characters.indexOf(char)) {
+                            args.shift();
+                            send(socket, "CT", ["(To " + config.characters[mclient.char] + ")", args.join(" ")], client.websocket);
+                            send(mclient.socket, "CT", [config.characters[client.char] + " whispered to you", args.join(" ")], mclient.websocket);
+                        }
+                    });
+                }
+            });
             break;
         default:
             send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
@@ -183,7 +209,7 @@ PacketHandler = {
                 socket.end();
         });
         clients[client.id].hardware = packetContents[0];
-        send(socket, "ID", [client.hardware, "bengoshi", "v1"], client.websocket); // TODO: Change these
+        send(socket, "ID", [client.hardware, "bengoshi", "v1"], client.websocket);
         if (players >= maxPlayers)
             socket.close();
         send(socket, "PN", [players, maxPlayers], client.websocket);
@@ -222,7 +248,7 @@ PacketHandler = {
         send(socket, "CT", ["Server", config.motd], client.websocket);
         if (roomSongs[0] != "")
             send(socket, "MC", [roomSongs[0], 0], client.websocket);
-        send(socket, "BN", [config.backgrounds[0]]);
+        send(socket, "BN", [config.backgrounds[0]], client.websocket);
     },
     "CC": (packetContents, socket, client) => {
         if (taken[packetContents[1]] == -1)
@@ -260,7 +286,7 @@ PacketHandler = {
         var time = 0;
         config.songs.forEach((song) => {
             if (song.name == packetContents[0]) {
-                if(song.category)
+                if (song.category)
                     return;
                 exists = true;
                 time = Math.floor(song.length * 1000);
