@@ -220,7 +220,7 @@ PacketHandler = {
     },
     // Free character
     "FC": (packetContents, socket, client) => {
-        taken[client.char] = 0;
+        rooms[client.room].taken[client.char] = 0;
     } 
 };
 
