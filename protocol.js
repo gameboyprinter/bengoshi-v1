@@ -158,6 +158,8 @@ PacketHandler = {
         }
         if (!exists) {
             var newRoom = isRoom(packetContents[0]);
+            if(newRoom == client.room)
+                return;
             if (newRoom != -1) {
                 if(rooms[newRoom].taken[client.char] == -1)
                 {
