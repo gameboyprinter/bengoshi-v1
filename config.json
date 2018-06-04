@@ -18,21 +18,22 @@
     "TouhouCourt",
     "EnglishCourt"
   ],
-  "bans": [
-    {
-      "ip": "8.8.8.8",
-      "hwid": "example"
-    }
-  ],
+  "bans": [{
+    "ip": "8.8.8.8",
+    "hwid": "example"
+  }],
   "mods": [
     "::ffff:108.247.105.152"
   ],
   "maxRepeats": 15,
   "maxArgLength": 30,
   "maxBadPackets": 10,
-  "songs": [
-    {
+  "songs": [{
       "name": "~stop.mp3"
+    },
+    {
+      "name": "Vanilla",
+      "category": true
     },
     {
       "name": "01_turnabout_courtroom_-_prologue.mp3",

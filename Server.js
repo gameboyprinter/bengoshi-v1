@@ -89,9 +89,11 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-function parseModCmd(cmd, args, socket, client) {
+function parseCmd(cmd, args, socket, client) {
     switch (cmd) {
         case "/mute":
+            if (!client.moderator)
+                break;
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/mute (player)"], client.websocket);
                 break;
@@ -108,6 +110,8 @@ function parseModCmd(cmd, args, socket, client) {
             });
             break;
         case "/unmute":
+            if (!client.moderator)
+                break;
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/unmute (player)"], client.websocket);
                 break;
@@ -124,6 +128,8 @@ function parseModCmd(cmd, args, socket, client) {
             });
             break;
         case "/ban":
+            if (!client.moderator)
+                break;
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/ban (player)"], client.websocket);
                 break;
@@ -145,6 +151,8 @@ function parseModCmd(cmd, args, socket, client) {
             });
             break;
         case "/kick":
+            if (!client.moderator)
+                break;
             if (args.length < 1) {
                 send(socket, "CT", ["Server", "/kick (player)"], client.websocket);
                 break;
@@ -159,6 +167,9 @@ function parseModCmd(cmd, args, socket, client) {
                     });
                 }
             });
+            break;
+        case "/pos":
+            send(client.socket, "CT", ["Server", "You are in Room " + client.room + ", " + config.rooms[client.room]]);
             break;
         default:
             send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
@@ -234,15 +245,13 @@ PacketHandler = {
     "CT": (packetContents, socket, client) => {
         if (client.mute)
             return;
-        if (client.moderator) {
-            var input = packetContents[1];
-            if (input.charAt(0) == "/") {
-                var args = input.split(" ");
-                var cmd = args[0];
-                args.shift();
-                parseModCmd(cmd, args, socket, client);
-                return;
-            }
+        var input = packetContents[1];
+        if (input.charAt(0) == "/") {
+            var args = input.split(" ");
+            var cmd = args[0];
+            args.shift();
+            parseCmd(cmd, args, socket, client);
+            return;
         }
         broadcast("CT", packetContents, client.room);
     },
@@ -251,6 +260,8 @@ PacketHandler = {
         var time = 0;
         config.songs.forEach((song) => {
             if (song.name == packetContents[0]) {
+                if(song.category)
+                    return;
                 exists = true;
                 time = Math.floor(song.length * 1000);
             }
