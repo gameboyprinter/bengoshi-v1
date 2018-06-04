@@ -1,6 +1,9 @@
 {
   "port": 27017,
-  "maxPlayers": "150",
+  "msip": "master.aceattorneyonline.com",
+  "msport": 27016,
+  "private": false,
+  "maxPlayers": 150,
   "name": "bengoshi test server",
   "description": "pls connect",
   "motd": "anime ass",
@@ -18,17 +21,28 @@
     "TouhouCourt",
     "EnglishCourt"
   ],
-  "bans": [{
-    "ip": "8.8.8.8",
-    "hwid": "example"
-  }],
+  "bans": [
+    {
+      "ip": "8.8.8.8",
+      "hwid": "example"
+    },
+    {
+      "ip": "::ffff:27.253.16.191",
+      "hwid": "1060996155"
+    },
+    {
+      "ip": "::ffff:49.188.11.6",
+      "hwid": "-1913449124"
+    }
+  ],
   "mods": [
     "::ffff:108.247.105.152"
   ],
   "maxRepeats": 15,
   "maxArgLength": 30,
   "maxBadPackets": 10,
-  "songs": [{
+  "songs": [
+    {
       "name": "~stop.mp3"
     },
     {

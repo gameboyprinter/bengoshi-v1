@@ -493,9 +493,10 @@ net.createServer((socket) => {
 }).listen(port);
 
 // Master server advertiser
-
-var client = new net.Socket();
-client.connect(27016, "master.aceattorneyonline.com", () => {
-    console.log("Master server connection established");
-    client.write(packetBuilder("SCC", [port, config.name, config.description, "bengoshi v1"]));
-});
+if(!config.private){
+    var client = new net.Socket();
+    client.connect(config.msport, config.msip, () => {
+        console.log("Master server connection established");
+        client.write(packetBuilder("SCC", [port, config.name, config.description, "bengoshi v1"]));
+    });
+}
