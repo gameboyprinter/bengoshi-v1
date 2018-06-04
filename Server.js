@@ -22,7 +22,7 @@ net.createServer((socket) => {
     var wsTimeout = setTimeout(() => {
         if (!socket.destroyed)
             socket.write("decryptor#34#%");
-    }, 750);
+    }, config.wsTime);
     if (!util.isConnected(socketName)) {
         client = {
             mute: false,

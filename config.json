@@ -41,6 +41,7 @@
   "maxRepeats": 15,
   "maxArgLength": 30,
   "maxBadPackets": 10,
+  "wsTime": 750,
   "songs": [
     {
       "name": "~stop.mp3"
