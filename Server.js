@@ -5,6 +5,7 @@ const fs = require("fs");
 
 const port = config.port;
 const maxPlayers = config.maxPlayers;
+const softVersion = 2;
 var clients = [];
 var currentID = 0;
 var players = 0;
@@ -213,7 +214,7 @@ PacketHandler = {
                 socket.end();
         });
         clients[client.id].hardware = packetContents[0];
-        send(socket, "ID", [client.hardware, "bengoshi", "v1"], client.websocket);
+        send(socket, "ID", [client.hardware, "bengoshi", "v" + softVersion], client.websocket);
         if (players >= maxPlayers)
             socket.close();
         send(socket, "PN", [players, maxPlayers], client.websocket);
@@ -518,6 +519,6 @@ if(!config.private){
     var client = new net.Socket();
     client.connect(config.msport, config.msip, () => {
         console.log("Master server connection established");
-        client.write(packetBuilder("SCC", [port, config.name, config.description, "bengoshi v1"]));
+        client.write(packetBuilder("SCC", [port, config.name, config.description, "bengoshi v" + softVersion]));
     });
 }
