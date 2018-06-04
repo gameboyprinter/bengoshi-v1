@@ -11,11 +11,15 @@ var players = 0;
 var taken = [];
 var roomSongs = [];
 var musicIntervals = [];
+var evidenceLists = [];
 
 for (var i = 0; i < config.characters.length; i++)
     taken[i] = 0;
-for (var i = 0; i < config.rooms.length; i++)
+for (var i = 0; i < config.rooms.length; i++){
     roomSongs.push("");
+    evidenceLists.push([]);
+}
+    
 
 function loopMusic(room) {
     broadcast("MC", [roomSongs[room], -1], room);
@@ -23,7 +27,7 @@ function loopMusic(room) {
 
 function fantaDecrypt(data) {
     var bytes = Buffer.from(data, "hex");
-    if (data == "CC" || bytes.length != (data.length / 2)) // Shitty heuristic, this will return the input if the input isnt all hex characters
+    if (bytes.length == 1 || bytes.length != (data.length / 2)) // Shitty heuristic, this will return the input if the input isnt all hex characters
         return data; // This allows "detection" of encrypted packets
     key = 5; // fantacrypt constant
     var cleartext = "";
@@ -245,10 +249,6 @@ PacketHandler = {
         send(socket, "CharsCheck", taken, client.websocket);
         send(socket, "OPPASS", ["42"], client.websocket);
         send(socket, "DONE", [], client.websocket);
-        send(socket, "CT", ["Server", config.motd], client.websocket);
-        if (roomSongs[0] != "")
-            send(socket, "MC", [roomSongs[0], 0], client.websocket);
-        send(socket, "BN", [config.backgrounds[0]], client.websocket);
     },
     "CC": (packetContents, socket, client) => {
         if (taken[packetContents[1]] == -1)
@@ -258,6 +258,11 @@ PacketHandler = {
         taken[packetContents[1]] = -1;
         clients[client.id].char = packetContents[1];
         send(socket, "PV", [client.id, "CID", clients[client.id].char], client.websocket);
+        send(socket, "CT", ["Server", config.motd], client.websocket);
+        send(socket, "LE", evidenceLists[client.room]);
+        if (roomSongs[0] != "")
+            send(socket, "MC", [roomSongs[client.room], -1], client.websocket);
+        send(socket, "BN", [config.backgrounds[client.room]], client.websocket);
         players++;
     },
     "CH": (packetContents, socket, client) => {
@@ -304,6 +309,7 @@ PacketHandler = {
                 client.room = config.rooms.indexOf(packetContents[0]);
                 send(socket, "CT", ["Server", "You moved to room number " + client.room + ", " + packetContents[0]], client.websocket);
                 send(socket, "BN", [config.backgrounds[client.room]]);
+                send(socket, "LE", evidenceLists[client.room]);
                 if (roomSongs[client.room] == "")
                     send(socket, "MC", ["~stop.mp3", -1], client.websocket);
                 else
@@ -319,6 +325,21 @@ PacketHandler = {
     },
     "HP": (packetContents, socket, client) => {
         broadcast("HP", packetContents, client.room);
+    },
+    "PE": (packetContents, socket, client) => {
+        var evidence = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
+        evidenceLists[client.room].push(evidence);
+        broadcast("LE", evidenceLists[client.room], client.room);
+    },
+    "DE": (packetContents, socket, client) => {
+        evidenceLists[client.room].splice(packetContents[0], 1);
+        broadcast("LE", evidenceLists[client.room], client.room);
+    },
+    "EE": (packetContents, socket, client) => {
+        var id = packetContents[0];
+        packetContents.shift();
+        evidenceLists[client.room][id] = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
+        broadcast("LE", evidenceLists[client.room], client.room);
     }
 };
 
