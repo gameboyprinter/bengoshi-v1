@@ -211,6 +211,7 @@ PacketHandler = {
         send(socket, "CT", ["Server", config.motd], client.websocket);
         if (roomSongs[0] != "")
             send(socket, "MC", [roomSongs[0], 0], client.websocket);
+        send(socket, "BN", [config.backgrounds[0]]);
     },
     "CC": (packetContents, socket, client) => {
         if (taken[packetContents[1]] == -1)
@@ -265,6 +266,7 @@ PacketHandler = {
             if (config.rooms.includes(packetContents[0])) {
                 client.room = config.rooms.indexOf(packetContents[0]);
                 send(socket, "CT", ["Server", "You moved to room number " + client.room + ", " + packetContents[0]], client.websocket);
+                send(socket, "BN", [config.backgrounds[client.room]]);
                 if (roomSongs[client.room] == "")
                     send(socket, "MC", ["~stop.mp3", -1], client.websocket);
                 else

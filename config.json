@@ -11,6 +11,13 @@
     "Case 3",
     "~moderator"
   ],
+  "backgrounds": [
+    "default",
+    "Anime",
+    "birthday",
+    "TouhouCourt",
+    "EnglishCourt"
+  ],
   "bans": [
     {
       "ip": "8.8.8.8",
