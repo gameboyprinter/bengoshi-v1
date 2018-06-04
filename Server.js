@@ -12,13 +12,17 @@ var players = 0;
 var taken = [];
 var roomSongs = [];
 var musicIntervals = [];
-var evidenceLists = [];
+var evidenceLists = require('./evidence.json');
 
 for (var i = 0; i < config.characters.length; i++)
     taken[i] = 0;
+var initEvidence = evidenceLists.length != config.rooms.length;
+if(initEvidence)
+    evidenceLists = [];
 for (var i = 0; i < config.rooms.length; i++){
     roomSongs.push("");
-    evidenceLists.push([]);
+    if(initEvidence)
+        evidenceLists.push([]);
 }
     
 
@@ -330,16 +334,19 @@ PacketHandler = {
     "PE": (packetContents, socket, client) => {
         var evidence = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
         evidenceLists[client.room].push(evidence);
+        fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
         broadcast("LE", evidenceLists[client.room], client.room);
     },
     "DE": (packetContents, socket, client) => {
         evidenceLists[client.room].splice(packetContents[0], 1);
+        fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
         broadcast("LE", evidenceLists[client.room], client.room);
     },
     "EE": (packetContents, socket, client) => {
         var id = packetContents[0];
         packetContents.shift();
         evidenceLists[client.room][id] = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
+        fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
         broadcast("LE", evidenceLists[client.room], client.room);
     }
 };
