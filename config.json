@@ -1,9 +1,10 @@
 {
-  "port": 27017,
+  "port": 27016,
   "msip": "master.aceattorneyonline.com",
   "msport": 27016,
   "private": false,
   "maxPlayers": 150,
+  "modpass": "password",
   "name": "bengoshi test server",
   "description": "pls connect",
   "motd": "anime ass",
@@ -18,7 +19,7 @@
     {
       "name": "Case 1",
       "background": "Anime",
-      "BGLock": true,
+      "BGLock": false,
       "CELock": true,
       "private": false
     },

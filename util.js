@@ -34,7 +34,6 @@ function broadcast(header, data, room) {
         if (client.room == room) {
             send(client.socket, header, data, client.websocket);
         }
-
     });
 }
 
@@ -121,9 +120,9 @@ function decodeWs(data, socket) {
 }
 
 // Ban a player, update the config
-function ban(client) {
+function ban(client, config) {
     send(client.socket, "KB", [client.char], client.websocket);
-    socket.end();
+    client.socket.end();
     config.bans.push({
         ip: client.socket.remoteAddress,
         hwid: client.hardware

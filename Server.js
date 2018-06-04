@@ -25,6 +25,8 @@ net.createServer((socket) => {
     }, config.wsTime);
     if (!util.isConnected(socketName)) {
         client = {
+            oocmute: false,
+            cemute: false,
             mute: false,
             badPackets: config.maxBadPackets,
             room: 0,
@@ -93,17 +95,17 @@ net.createServer((socket) => {
         // Anti-spam
         if (!client.moderator) {
             if (client.badPackets == 0) {
-                util.ban(client);
+                util.ban(client, config);
             }
             if (packetContents.length > config.maxArgLength) {
-                util.ban(client);
+                util.ban(client, config);
             }
             if (header + packetContents.toString() == client.lastPacket)
                 client.repeats++;
             else
                 client.repeats = 0;
             if (client.repeats >= config.maxRepeats) {
-                util.ban(client);
+                util.ban(client, config);
             }
             client.lastPacket = header + packetContents.toString();
         }

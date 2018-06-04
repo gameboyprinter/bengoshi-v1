@@ -115,21 +115,24 @@ PacketHandler = {
     // IC chat
     // TODO: Filtering
     "MS": (packetContents, socket, client) => {
-        if (client.mute)
+        if (client.mute){
+            util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
+        }
         util.broadcast("MS", packetContents, client.room);
     },
     // OOC Chat
-    // TODO: OOC mutes
     "CT": (packetContents, socket, client) => {
-        if (client.mute)
+        if (client.oocmute){
+            util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
+        }
         var input = packetContents[1];
         if (input.charAt(0) == "/") {
             var args = input.split(" ");
             var cmd = args[0];
             args.shift();
-            cmds.parseCmd(cmd, args, socket, client, config);
+            cmds.parseCmd(cmd, args, socket, client, config, rooms);
             return;
         }
         util.broadcast("CT", packetContents, client.room);
@@ -189,9 +192,15 @@ PacketHandler = {
 
     },
     // CE/WT
-    // TODO: Muting and rate limiting
+    // TODO: Rate limiting
     // TODO: Check player position
     "RT": (packetContents, socket, client) => {
+        if (client.cemute){
+            util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
+            return;
+        }
+        if(rooms[client.room].CELock)
+            return;
         util.broadcast("RT", packetContents, client.room);
     },
     // Judge HP bars

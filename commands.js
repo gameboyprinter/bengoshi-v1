@@ -1,7 +1,108 @@
 const util = require("./util.js");
 
-function parseCmd(cmd, args, socket, client, config) {
+function parseCmd(cmd, args, socket, client, config, rooms) {
     switch (cmd) {
+        // TODO: Validate this
+        case "/background":
+            if(args.length < 1)
+            {
+                util.send(socket, "CT", ["Server", "/background background"], client.websocket);
+            }
+            if(!rooms[client.room].BGLock || client.moderator){
+                util.broadcast("BN", [args[0]], client.room);
+                rooms[client.room].background = args[0];
+                break;
+            }
+            util.send(socket, "CT", ["Server", "Background is locked"], client.websocket);
+            break;
+        case "/modpass":
+            if(args.length >= 1){
+                if(args[0] == config.modpass){
+                    util.send(socket, "CT", ["Server", "Correct password!"], client.websocket);
+                    client.moderator = true;
+                }
+            }
+            break;
+        case "/ceunmute":
+            if (!client.moderator) {
+                util.send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
+                break;
+            }
+            if (args.length < 1) {
+                util.send(socket, "CT", ["Server", "/ceunmute (player)"], client.websocket);
+                break;
+            }
+            config.characters.forEach((char) => {
+                if (char.toLowerCase() == args[0].toLowerCase()) {
+                    util.clients.forEach((mclient) => {
+                        if (mclient.char == config.characters.indexOf(char)) {
+                            mclient.cemute = false;
+                            util.send(mclient.socket, "UM", [], mclient.websocket)
+                        }
+                    });
+                }
+            });
+            break;
+        case "/cemute":
+            if (!client.moderator) {
+                util.send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
+                break;
+            }
+            if (args.length < 1) {
+                util.send(socket, "CT", ["Server", "/cemute (player)"], client.websocket);
+                break;
+            }
+            config.characters.forEach((char) => {
+                if (char.toLowerCase() == args[0].toLowerCase()) {
+                    util.clients.forEach((mclient) => {
+                        if (mclient.char == config.characters.indexOf(char)) {
+                            mclient.cemute = true;
+                            util.send(mclient.socket, "MU", [], mclient.websocket)
+                        }
+                    });
+                }
+            });
+            break;
+        case "/oocunmute":
+            if (!client.moderator) {
+                util.send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
+                break;
+            }
+            if (args.length < 1) {
+                util.send(socket, "CT", ["Server", "/oocunmute (player)"], client.websocket);
+                break;
+            }
+            config.characters.forEach((char) => {
+                if (char.toLowerCase() == args[0].toLowerCase()) {
+                    util.clients.forEach((mclient) => {
+                        if (mclient.char == config.characters.indexOf(char)) {
+                            mclient.oocmute = false;
+                            util.send(mclient.socket, "UM", [], mclient.websocket)
+                        }
+                    });
+                }
+            });
+            break;
+        case "/oocmute":
+            if (!client.moderator) {
+                util.send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
+                break;
+            }
+            if (args.length < 1) {
+                util.send(socket, "CT", ["Server", "/oocmute (player)"], client.websocket);
+                break;
+            }
+            config.characters.forEach((char) => {
+                if (char.toLowerCase() == args[0].toLowerCase()) {
+                    util.clients.forEach((mclient) => {
+                        if (mclient.char == config.characters.indexOf(char)) {
+                            mclient.oocmute = true;
+                            util.send(mclient.socket, "MU", [], mclient.websocket)
+                        }
+                    });
+                }
+            });
+            break;
         case "/mute":
             if (!client.moderator) {
                 util.send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
