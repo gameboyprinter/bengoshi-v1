@@ -149,7 +149,7 @@ PacketHandler = {
             if (config.rooms.includes(packetContents[0])) {
                 client.room = config.rooms.indexOf(packetContents[0]);
                 util.send(socket, "CT", ["Server", "You moved to room number " + client.room + ", " + packetContents[0]], client.websocket);
-                util.send(socket, "BN", [config.backgrounds[client.room]]);
+                util.send(socket, "BN", [config.backgrounds[client.room]], client.websocket);
                 util.send(socket, "LE", evidenceLists[client.room], client.websocket);
                 if (roomSongs[client.room] == "")
                     util.send(socket, "MC", ["~stop.mp3", -1], client.websocket);
