@@ -26,9 +26,11 @@ config
 - msport: master server port
 - private: do not list on master server
 - maxPlayers: most players allowed
+- modpass: password that allows players to become a moderator
 - name: name in master server
 - description: message box in master server
 - motd: sent when client connects
+- backgrounds: array of strings that are valid backgrounds
 - rooms: each room is an objext with the following properties:
 - - name: room name in music list
 - - background: default background

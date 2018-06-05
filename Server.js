@@ -100,7 +100,7 @@ net.createServer((socket) => {
             if (packetContents.length > config.maxArgLength) {
                 util.ban(client, config);
             }
-            if (header + packetContents.toString() == client.lastPacket)
+            if (header != "CH" && header + packetContents.toString() == client.lastPacket)
                 client.repeats++;
             else
                 client.repeats = 0;

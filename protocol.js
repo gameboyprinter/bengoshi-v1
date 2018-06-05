@@ -17,7 +17,7 @@ if(initEvidence)
 for (var i = 0; i < config.rooms.length; i++){
     if(initEvidence)
         evidenceLists.push([]);
-    rooms[i] = config.rooms[i];
+    rooms[i] = JSON.parse(JSON.stringify(config.rooms[i])); // Deep copy
     rooms[i].evidence = evidenceLists[i];
     rooms[i].taken = Array.apply(null, Array(config.characters.length)).map(Number.prototype.valueOf,0);
     rooms[i].song = "~stop.mp3";

@@ -2,15 +2,30 @@ const util = require("./util.js");
 
 function parseCmd(cmd, args, socket, client, config, rooms) {
     switch (cmd) {
-        // TODO: Validate this
+        case "/bglock":
+            if(client.moderator){
+                rooms[client.room].BGLock = !rooms[client.room].BGLock;
+                util.send(socket, "CT", ["Server", "Background lock toggled"], client.websocket);
+            }
+            break;
+        case "/bg":
         case "/background":
             if(args.length < 1)
             {
-                util.send(socket, "CT", ["Server", "/background background"], client.websocket);
+                util.send(socket, "CT", ["Server", "/background (background)"], client.websocket);
             }
             if(!rooms[client.room].BGLock || client.moderator){
-                util.broadcast("BN", [args[0]], client.room);
-                rooms[client.room].background = args[0];
+                var success = false;
+                config.backgrounds.forEach((bg) => {
+                    if(bg.toLowerCase() == args[0]){
+                        util.broadcast("BN", [args[0]], client.room);
+                        rooms[client.room].background = args[0];
+                        util.send(socket, "CT", ["Server", "Background changed to " + bg], client.websocket);
+                        success = true;
+                    }
+                });
+                if(!success)
+                    util.send(socket, "CT", ["Server", "Not a valid background!"], client.websocket);
                 break;
             }
             util.send(socket, "CT", ["Server", "Background is locked"], client.websocket);
