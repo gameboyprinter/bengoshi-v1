@@ -1,0 +1,24 @@
+{
+  "name": "bengoshi",
+  "version": "1.0.0",
+  "description": "AO2 Server",
+  "main": "Server.js",
+  "dependencies": {
+    "js-yaml": "^3.12.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AttorneyOnline/bengoshi.git"
+  },
+  "author": "gameboyprinter",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/AttorneyOnline/bengoshi/issues"
+  },
+  "homepage": "https://github.com/AttorneyOnline/bengoshi#readme"
+}
