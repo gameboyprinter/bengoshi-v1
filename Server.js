@@ -1,6 +1,11 @@
 const net = require("net");
-const config = require("./config.json");
 const crypto = require("crypto");
+const fs = require("fs");
+require("./tsuimporter.js");
+if(!fs.existsSync("./config.json")){
+    while(true); // Hang, tsuimporter.js will close the process
+}
+const config = require("./config.json");
 const cmds = require("./commands.js");
 const protocol = require("./protocol.js");
 const util = require("./util.js");

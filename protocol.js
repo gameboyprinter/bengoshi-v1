@@ -1,8 +1,8 @@
 // All the packet handling and game state (that is not user-specific) takes place here
 const fs = require("fs");
-const config = require("./config.json");
 const util = require("./util.js");
 const cmds = require("./commands.js");
+const config = JSON.parse(fs.readFileSync("./config.json"));
 
 // Game state
 // TODO: Room state objects
