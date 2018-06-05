@@ -10,9 +10,12 @@ var rooms = [];
 var players = 0;
 
 // Initialize rooms
-if(fs.exists("./evidence.json"))
+var evidenceLists = [];
+if(!fs.existsSync("./evidence.json"))
     fs.writeFileSync("./evidence.json", "[]");
-var evidenceLists = require('./evidence.json');
+else
+    evidenceLists = JSON.parse(fs.readFileSync("./evidence.json"));
+
 var initEvidence = evidenceLists.length != config.rooms.length;
 if(initEvidence)
     evidenceLists = [];

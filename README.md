@@ -10,13 +10,16 @@ features
 - rooms
 - auto loop music
 - moderator commands
+- tsuserver3 config import
 - no botnet guarantee
 
 to use:
 ---
-- download zip
+- download zip,extract
 - install node.js (google how!!!)
-- run the bat file (or if youre on linux i think you can figure it out)
+- run the following commands inside of the bengoshi directory
+- - npm install (this will download the needed files)
+- - npm start (this starts the server)
 - yay!!
 
 config
