@@ -1,6 +1,6 @@
 // Just a few supporting functions to reduce code redundancy
 const fs = require("fs");
-const softVersion = 3;
+const softVersion = "1.0rc1";
 var clients = [];
 
 // Handles old AO1.X "encryption"
