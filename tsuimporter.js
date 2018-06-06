@@ -1,7 +1,8 @@
 const fs = require("fs");
 const yml = require("js-yaml");
+const ini = require("ini");
 
-if(!fs.existsSync("config.json") && fs.existsSync("config/") && fs.existsSync("config/areas.yaml") && fs.existsSync("config/characters.yaml") && fs.existsSync("config/config.yaml") && fs.existsSync("config/backgrounds.yaml") && fs.existsSync("config/music.yaml")){
+if (!fs.existsSync("config.json") && fs.existsSync("config/") && fs.existsSync("config/areas.yaml") && fs.existsSync("config/characters.yaml") && fs.existsSync("config/config.yaml") && fs.existsSync("config/backgrounds.yaml") && fs.existsSync("config/music.yaml")) {
     console.log("tsuserver config directory detected, entering import mode.");
     
     var areas = yml.safeLoad(fs.readFileSync("config/areas.yaml"));
@@ -66,9 +67,7 @@ if(!fs.existsSync("config.json") && fs.existsSync("config/") && fs.existsSync("c
     fs.writeFileSync("config.json", JSON.stringify(newConfig, null, 2));
     console.log("New config generated. Restart server to use it!");
     process.exit(0);
-}
-else{
-    if(!fs.existsSync("config.json")){
+} else if (!fs.existsSync("config.json")) {
         var defaultConfig = {
             "port": 27016,
             "msip": "master.aceattorneyonline.com",
@@ -428,9 +427,39 @@ else{
               "Young Mia",
               "Zak"
             ]
-          };
+        };
+
+        if (fs.existsSync("base/settings.ini") && fs.existsSync("base/musiclist.txt") && fs.existsSync("base/masterserver.ini") && fs.existsSync("base/scene/AAOPublic2/areas.ini") && fs.existsSync("base/scene/AAOPublic2/init.ini")) {
+            console.log("Importing settings from serverD");
+            var general = ini.parse(fs.readFileSync("base/settings.ini"));
+            var music = ini.parse(fs.readFileSync("base/musiclist.txt"));
+            var master = ini.parse(fs.readFileSync("base/masterserver.ini"));
+            var areas = ini.parse(fs.readFileSync("base/scene/AAOPublic2/areas.ini"));
+            var scene = ini.parse(fs.readFileSync("base/scene/AAOPublic2/init.ini"));
+            var newConfig = {
+                "port": general.net.port,
+                "msip": master.
+                "msport": master.
+                "private": !general.net["public"],
+                "modpass": general.net.oppassword,
+                "name": general.server.name,
+                "description": general.server.desc,
+				// todo add hd bans
+				"bans": fs.readFileSync("base/bans.txt").split("\n").map((ip) => {return {ip: ip};}),
+				"mods": fs.readFileSync("base/op.txt").split("\n"),
+			    "songs": fs.readFileSync("base/musiclist.txt").split("\n").map((line) => {return {name: line.split("*")[0], length: line.split("*")[1], category: line.charAt(0) === '-' ? true : undefined};};),
+				"characters": [],
+				"rooms": []
+            };
+			
+			delete defaultConfig.bans;
+			delete defaultConfig.mods;
+			delete defaultConfig.songs;
+			delete defaultConfig.characters;
+            Object.assign(defaultConfig, newConfig);
+		} 
+
         fs.writeFileSync("config.json", JSON.stringify(defaultConfig, null, 2));
-        console.log("No config.json or tsuserver config found. Using default config. Restart server to use it!");
-        process.exit(0);  
-    }
+        console.log("No config.json, tsuserver config, or serverD config found; using default config. Restart server to import a config!");
+        process.exit(0);
 }
