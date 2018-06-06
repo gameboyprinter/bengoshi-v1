@@ -94,6 +94,14 @@ PacketHandler = {
         util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
         util.send(socket, "OPPASS", ["42"], client.websocket);
         util.send(socket, "DONE", [], client.websocket);
+        util.send(socket, "CT", ["Server", config.motd], client.websocket); // Send MOTD
+        util.send(socket, "LE", rooms[client.room].evidence, client.websocket); // Send evidence
+        util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket); // Send song
+        util.send(socket, "BN", [rooms[client.room].background], client.websocket); // Send background
+        if(client.software == "TNLIB"){
+            util.send(socket, "CT", ["Dear TNC User", "Consider using the vanilla client."], client.websocket);
+        }
+        players++;
     },
     // Change character
     "CC": (packetContents, socket, client) => {
@@ -104,14 +112,6 @@ PacketHandler = {
         rooms[client.room].taken[packetContents[1]] = -1;
         client.char = packetContents[1];
         util.send(socket, "PV", [client.id, "CID", client.char], client.websocket); // Char pick success
-        util.send(socket, "CT", ["Server", config.motd], client.websocket); // Send MOTD
-        util.send(socket, "LE", rooms[client.room].evidence, client.websocket); // Send evidence
-        util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket); // Send song
-        util.send(socket, "BN", [rooms[client.room].background], client.websocket); // Send background
-        if(client.software == "TNLIB"){
-            util.send(socket, "CT", ["Dear TNC User", "Consider using the vanilla client."], client.websocket);
-        }
-        players++;
     },
     // Keepalive heartbeat
     "CH": (packetContents, socket, client) => {
