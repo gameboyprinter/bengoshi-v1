@@ -15,7 +15,9 @@ if(!fs.existsSync("config.json") && fs.existsSync("config/") && fs.existsSync("c
         maxRepeats: 20,
         maxArgLength: 30,
         maxBadPackets: 10,
-        wsTime: 750
+        wsTime: 750,
+        bans: [],
+        mods: []
     };
 
     // Simple stuff
@@ -57,8 +59,6 @@ if(!fs.existsSync("config.json") && fs.existsSync("config/") && fs.existsSync("c
             BGLock: area.bglock,
             CELock: false,
             private: false,
-            bans: [],
-            mods: []
         });
     });
     newConfig.rooms = rooms;
