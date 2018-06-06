@@ -50,7 +50,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             mclient.cemute = false;
                             util.send(mclient.socket, "UM", [], mclient.websocket)
                         }
@@ -70,7 +70,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             mclient.cemute = true;
                             util.send(mclient.socket, "MU", [], mclient.websocket)
                         }
@@ -90,7 +90,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             mclient.oocmute = false;
                             util.send(mclient.socket, "UM", [], mclient.websocket)
                         }
@@ -110,7 +110,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             mclient.oocmute = true;
                             util.send(mclient.socket, "MU", [], mclient.websocket)
                         }
@@ -130,7 +130,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             mclient.mute = true;
                             util.send(mclient.socket, "MU", [], mclient.websocket)
                         }
@@ -150,7 +150,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             mclient.mute = false;
                             util.send(mclient.socket, "UM", [], mclient.websocket)
                         }
@@ -170,9 +170,9 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             util.send(mclient.socket, "KB", [], mclient.websocket)
-                            socket.end();
+                            mclient.socket.end();
                             config.bans.push({
                                 ip: mclient.socket.remoteAddress,
                                 hwid: mclient.hardware
@@ -196,9 +196,9 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             util.send(mclient.socket, "KK", [], mclient.websocket)
-                            socket.end();
+                            mclient.socket.end();
                         }
                     });
                 }
@@ -215,7 +215,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
             config.characters.forEach((char) => {
                 if (char.toLowerCase() == args[0].toLowerCase()) {
                     util.clients.forEach((mclient) => {
-                        if (mclient.char == config.characters.indexOf(char)) {
+                        if (mclient.char == config.characters.indexOf(char) && mclient.room == client.room) {
                             args.shift();
                             util.send(socket, "CT", ["(To " + config.characters[mclient.char] + ")", args.join(" ")], client.websocket);
                             util.send(mclient.socket, "CT", [config.characters[client.char] + " whispered to you", args.join(" ")], mclient.websocket);
