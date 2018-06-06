@@ -161,7 +161,7 @@ PacketHandler = {
             rooms[client.room].song = packetContents[0];
             util.broadcast("MC", packetContents, client.room);
             clearInterval(rooms[client.room].roomInterval);
-            if (rooms[client.room].song != "~stop.mp3")
+            if (rooms[client.room].song != "~stop.mp3" && time > 0)
                 rooms[client.room].roomInterval = setInterval(loopMusic, time, client.room);
         }
         if (!exists) {

@@ -1,7 +1,7 @@
 const net = require("net");
 const crypto = require("crypto");
 const fs = require("fs");
-require("./tsuimporter.js");
+require("./import.js");
 if(!fs.existsSync("./config.json")){
     while(true); // Hang, tsuimporter.js will close the process
 }

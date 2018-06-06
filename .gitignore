@@ -1,4 +1,5 @@
 config/
+base/
 node_modules/
 config.json
 evidence.json
