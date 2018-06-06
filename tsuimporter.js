@@ -56,7 +56,9 @@ if(!fs.existsSync("config.json") && fs.existsSync("config/") && fs.existsSync("c
             background: area.background,
             BGLock: area.bglock,
             CELock: false,
-            private: false
+            private: false,
+            bans: [],
+            mods: []
         });
     });
     newConfig.rooms = rooms;
