@@ -10,7 +10,7 @@ features
 - rooms
 - auto loop music
 - moderator commands
-- tsuserver3 config import
+- tsuserver3/serverD config import
 - no botnet guarantee
 
 to use:
@@ -18,7 +18,7 @@ to use:
 - download zip,extract
 - install node.js (google how!!!)
 - run the following commands inside of the bengoshi directory
-- - npm install (this will download the needed files)
+- - npm install (this will download the needed files, you only need to do this once)
 - - npm start (this starts the server)
 - yay!!
 
@@ -37,8 +37,8 @@ config
 - rooms: each room is an objext with the following properties:
 - - name: room name in music list
 - - background: default background
-- - BGLock: prevent background changes (UNIMPLEMENTED)
-- - CELock: prevent WT/CE messages (UNIMPLEMENTED)
+- - BGLock: prevent background changes
+- - CELock: prevent WT/CE messages
 - - private: only moderators can join
 - bans: people who can't connect, object with ip property and hwid property
 - mods: array of ip strings with moderator powers
