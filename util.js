@@ -1,6 +1,6 @@
 // Just a few supporting functions to reduce code redundancy
 const fs = require("fs");
-const softVersion = "1.0.0";
+const softVersion = "1.1.0";
 var clients = [];
 var players = 0;
 
