@@ -7,7 +7,6 @@ const config = JSON.parse(fs.readFileSync("./config.json"));
 // Game state
 // TODO: Room state objects
 var rooms = [];
-var players = 0;
 
 // Initialize rooms
 var evidenceLists = [];
@@ -53,9 +52,9 @@ PacketHandler = {
         var hardware = packetContents[0];
         client.hardware = hardware;
         util.send(socket, "ID", [hardware, "bengoshi", "v" + util.softVersion], client.websocket);
-        if (players >= config.maxPlayers)
+        if (util.players >= config.maxPlayers)
             socket.close();
-        util.send(socket, "PN", [players, config.maxPlayers], client.websocket);
+        util.send(socket, "PN", [util.players, config.maxPlayers], client.websocket);
         util.send(socket, "FL", ["fastloading", "noencryption", "yellowtext", "websockets", "customobjections", "deskmod"], client.websocket);
         // No more encrypted packets after this
         // TODO: AO1 support
@@ -100,7 +99,6 @@ PacketHandler = {
         if (client.software == "TNLIB") {
             util.send(socket, "CT", ["Dear TNC User", "Consider using the vanilla client."], client.websocket);
         }
-        players++;
     },
     // Change character
     "CC": (packetContents, socket, client) => {
@@ -186,6 +184,7 @@ PacketHandler = {
                 util.send(socket, "LE", rooms[client.room].evidence, client.websocket);
                 util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket);
                 util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
+                util.players++;
             }
         }
     },
@@ -294,6 +293,5 @@ PacketHandler = {
 
 module.exports = {
     PacketHandler: PacketHandler,
-    rooms: rooms,
-    players: players
+    rooms: rooms
 };

@@ -2,8 +2,8 @@ const net = require("net");
 const crypto = require("crypto");
 const fs = require("fs");
 require("./import.js");
-if(!fs.existsSync("./config.json")){
-    while(true); // Hang, tsuimporter.js will close the process
+if (!fs.existsSync("./config.json")) {
+    while (true); // Hang, tsuimporter.js will close the process
 }
 const config = require("./config.json");
 const cmds = require("./commands.js");
@@ -14,12 +14,14 @@ var currentID = 0;
 
 // Server Listener
 net.createServer((socket) => {
+    util.players = util.clients.length;
+
     config.bans.forEach((ban) => {
         if (ban.ip == socket.remoteAddress) {
-            util.send(socket, "BD", [], false);
             socket.end();
         }
     });
+
     var socketName = socket.remoteAddress + ":" + socket.remotePort;
     var client;
     // WebSockets have 750ms to send a handshake
@@ -28,20 +30,19 @@ net.createServer((socket) => {
         if (!socket.destroyed)
             socket.write("decryptor#34#%");
     }, config.wsTime);
-    if (!util.isConnected(socketName)) {
-        client = {
-            oocmute: false,
-            cemute: false,
-            mute: false,
-            badPackets: config.maxBadPackets,
-            room: 0,
-            websocket: false,
-            name: socketName,
-            socket: socket,
-            id: currentID++
-        };
-        util.clients.push(client);
-    }
+
+    client = {
+        oocmute: false,
+        cemute: false,
+        mute: false,
+        badPackets: config.maxBadPackets,
+        room: 0,
+        websocket: false,
+        name: socketName,
+        socket: socket,
+        id: util.clients.length
+    };
+    util.clients.push(client);
 
     if (config.mods.includes(socket.remoteAddress))
         client.moderator = true;
@@ -119,12 +120,7 @@ net.createServer((socket) => {
     });
 
     socket.on('error', (e) => {
-        util.cleanup(client, protocol);
         console.log(e);
-    });
-
-    socket.on('end', () => {
-        util.cleanup(client, protocol);
     });
 
     socket.on('close', () => {
@@ -134,7 +130,6 @@ net.createServer((socket) => {
 
 process.on('uncaughtException', function (err) {
     console.error(err);
-    util.cleanClients();
 });
 
 // Master server advertiser

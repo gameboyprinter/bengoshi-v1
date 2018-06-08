@@ -2,6 +2,7 @@
 const fs = require("fs");
 const softVersion = "1.0.0";
 var clients = [];
+var players = 0;
 
 // Handles old AO1.X "encryption"
 function fantaDecrypt(data, key) {
@@ -40,8 +41,6 @@ function isConnected(socketName) {
 // Send a FantaPacket to every client (within a room)
 function broadcast(header, data, room) {
     clients.forEach((client) => {
-        if (client.name == undefined)
-            return;
         if (client.room == room) {
             send(client.socket, header, data, client.websocket);
         }
@@ -91,27 +90,18 @@ function send(socket, header, data, ws) {
     }
 }
 
-function cleanClients() {
-    var newClients = [];
-    var counter = 0;
-    clients.forEach((client) => {
-        if(client.id != undefined){
-            client.id = counter;
-            newClients.push(client);
-            counter++;
-        }
-    });
-    delete clients;
-    clients = newClients;
+function recalculateIds(){
+    for(var i = 0; i < clients.length; i++){
+        clients[i].id = i;
+    }
+    players = clients.length;
 }
 
 // Disconnects a client
 function cleanup(client, protocol) {
-    cleanClients();
-    if (protocol.rooms[client.room].taken[client.char])
-        protocol.players--;
     protocol.rooms[client.room].taken[client.char] = 0;
-    clients[client.id] = {};
+    clients.splice(client.id, 1);
+    recalculateIds();
 }
 
 // Removes WebSocket encoding
@@ -161,7 +151,6 @@ function ban(client, config) {
 module.exports = {
     fantaDecrypt: fantaDecrypt,
     fantaEncrypt: fantaEncrypt,
-    cleanClients: cleanClients,
     isConnected: isConnected,
     broadcast: broadcast,
     send: send,
@@ -170,5 +159,6 @@ module.exports = {
     ban: ban,
     softVersion: softVersion,
     packetBuilder: packetBuilder,
-    clients: clients
+    clients: clients,
+    players: players
 };
