@@ -5,15 +5,21 @@ require("./import.js");
 if (!fs.existsSync("./config.json")) {
     while (true); // Hang, tsuimporter.js will close the process
 }
-const config = require("./config.json");
+const config = JSON.parse(fs.readFileSync("./config.json"));
 const cmds = require("./commands.js");
 const protocol = require("./protocol.js");
 const util = require("./util.js");
 
 var currentID = 0;
 
+function reloadConf(){
+    config = JSON.parse(fs.readFileSync("./config.json"));
+    protocol.reloadConf();
+}
+
 // Server Listener
 net.createServer((socket) => {
+    reloadConf();
     util.players = util.clients.length;
 
     config.bans.forEach((ban) => {

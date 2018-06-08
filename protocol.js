@@ -27,6 +27,10 @@ for (var i = 0; i < config.rooms.length; i++) {
     rooms[i].song = "~stop.mp3";
 }
 
+function reloadConf(){
+    config = JSON.parse(fs.readFileSync("./config.json"));
+}
+
 // This function is called on an interval, per room, to loop music.
 function loopMusic(room) {
     util.broadcast("MC", [rooms[room].song, -1], room);
@@ -293,5 +297,6 @@ PacketHandler = {
 
 module.exports = {
     PacketHandler: PacketHandler,
-    rooms: rooms
+    rooms: rooms,
+    reloadConf: reloadConf
 };
