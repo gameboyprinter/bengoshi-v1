@@ -11,20 +11,20 @@ var players = 0;
 
 // Initialize rooms
 var evidenceLists = [];
-if(!fs.existsSync("./evidence.json"))
+if (!fs.existsSync("./evidence.json"))
     fs.writeFileSync("./evidence.json", "[]");
 else
     evidenceLists = JSON.parse(fs.readFileSync("./evidence.json"));
 
 var initEvidence = evidenceLists.length != config.rooms.length;
-if(initEvidence)
+if (initEvidence)
     evidenceLists = [];
-for (var i = 0; i < config.rooms.length; i++){
-    if(initEvidence)
+for (var i = 0; i < config.rooms.length; i++) {
+    if (initEvidence)
         evidenceLists.push([]);
     rooms[i] = JSON.parse(JSON.stringify(config.rooms[i])); // Deep copy
     rooms[i].evidence = evidenceLists[i];
-    rooms[i].taken = Array.apply(null, Array(config.characters.length)).map(Number.prototype.valueOf,0);
+    rooms[i].taken = Array.apply(null, Array(config.characters.length)).map(Number.prototype.valueOf, 0);
     rooms[i].song = "~stop.mp3";
 }
 
@@ -34,9 +34,9 @@ function loopMusic(room) {
 }
 
 // Finds room by name
-function isRoom(name){
-    for(var i = 0; i < rooms.length; i++){
-        if(rooms[i].name == name)
+function isRoom(name) {
+    for (var i = 0; i < rooms.length; i++) {
+        if (rooms[i].name == name)
             return i;
     }
     return -1;
@@ -67,7 +67,7 @@ PacketHandler = {
     },
     // Char/Music list lengths request
     "askchaa": (packetContents, socket, client) => {
-        util.send(socket, "SI", [config.characters.length, 0, config.songs.length], client.websocket);
+        util.send(socket, "SI", [config.characters.length, evidenceLists[0].length, config.songs.length], client.websocket);
     },
     // Request chars
     "RC": (packetContents, socket, client) => {
@@ -77,11 +77,10 @@ PacketHandler = {
     "RM": (packetContents, socket, client) => {
         var songNames = [];
         config.rooms.forEach((room) => {
-            if (room.private){
+            if (room.private) {
                 if (client.moderator)
                     songNames.push(room.name);
-            }
-            else
+            } else
                 songNames.push(room.name);
         });
         config.songs.forEach((song) => {
@@ -98,7 +97,7 @@ PacketHandler = {
         util.send(socket, "LE", rooms[client.room].evidence, client.websocket); // Send evidence
         util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket); // Send song
         util.send(socket, "BN", [rooms[client.room].background], client.websocket); // Send background
-        if(client.software == "TNLIB"){
+        if (client.software == "TNLIB") {
             util.send(socket, "CT", ["Dear TNC User", "Consider using the vanilla client."], client.websocket);
         }
         players++;
@@ -120,7 +119,7 @@ PacketHandler = {
     // IC chat
     // TODO: Filtering
     "MS": (packetContents, socket, client) => {
-        if (client.mute){
+        if (client.mute) {
             util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
         }
@@ -128,7 +127,7 @@ PacketHandler = {
     },
     // OOC Chat
     "CT": (packetContents, socket, client) => {
-        if (client.oocmute){
+        if (client.oocmute) {
             util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
         }
@@ -166,13 +165,12 @@ PacketHandler = {
         }
         if (!exists) {
             var newRoom = isRoom(packetContents[0]);
-            if(newRoom == client.room)
+            if (newRoom == client.room)
                 return;
             if (newRoom != -1) {
-                if(rooms[newRoom].taken[client.char] == -1)
-                {
+                if (rooms[newRoom].taken[client.char] == -1) {
                     var newChar = rooms[client.room].taken.indexOf(0);
-                    if(newChar == -1){
+                    if (newChar == -1) {
                         util.send(socket, "CT", ["Server", "That room is full!"]);
                         return;
                     }
@@ -194,17 +192,17 @@ PacketHandler = {
     // Call mod
     // TODO: Implement this lol
     "ZZ": (packetContents, socket, client) => {
-        
+
     },
     // CE/WT
     // TODO: Rate limiting
     // TODO: Check player position
     "RT": (packetContents, socket, client) => {
-        if (client.cemute){
+        if (client.cemute) {
             util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
         }
-        if(rooms[client.room].CELock)
+        if (rooms[client.room].CELock)
             return;
         util.broadcast("RT", packetContents, client.room);
     },
@@ -240,6 +238,56 @@ PacketHandler = {
     },
     // Slow load char list
     "askchar2": (packetContents, socket, client) => {
+        var charList = [];
+        for (var i = 0; i < Math.min(10, config.characters.length); i++) {
+            charList.push(i);
+            charList.push(config.characters[i] + "&&0&&&0&");
+        }
+        util.send(socket, "CI", charList, client.websocket);
+    },
+    // Slow load character batch request
+    "AN": (packetContents, socket, client) => {
+        var charList = [];
+        var startAt = packetContents[0];
+        startAt *= 10;
+        for (var i = startAt; i < Math.min(startAt + 10, config.characters.length); i++) {
+            charList.push(i);
+            charList.push(config.characters[i] + "&&0&&&0&");
+        }
+        util.send(socket, "CI", charList, client.websocket);
+        if (i == config.characters.length) {
+            var songList = [];
+            for (var i = 0; i < Math.min(10, config.songs.length); i++) {
+                songList.push(i);
+                songList.push(config.songs[i].name);
+            }
+            util.send(socket, "EM", songList, client.websocket);
+        }
+    },
+    // Slow load music batch request
+    "AM": (packetContents, socket, client) => {
+        var songList = [];
+        var startAt = packetContents[0];
+        startAt *= 10;
+        for (var i = startAt; i < Math.min(startAt + 10, config.songs.length); i++) {
+            songList.push(i);
+            songList.push(config.songs[i].name);
+        }
+        if (startAt > config.songs.length) {
+            util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
+            util.send(socket, "OPPASS", ["42"], client.websocket);
+            util.send(socket, "DONE", [], client.websocket);
+            util.send(socket, "CT", ["Server", config.motd], client.websocket); // Send MOTD
+            util.send(socket, "LE", rooms[client.room].evidence, client.websocket); // Send evidence
+            util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket); // Send song
+            util.send(socket, "BN", [rooms[client.room].background], client.websocket); // Send background
+        }
+        else{
+            util.send(socket, "EM", songList, client.websocket);
+        }
+    },
+    // AO1.x Disconnect, don't need to do anything
+    "DC": (packetContents, socket, client) => {
         
     }
 };

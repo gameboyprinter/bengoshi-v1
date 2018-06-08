@@ -133,6 +133,7 @@ net.createServer((socket) => {
 }).listen(config.port);
 
 process.on('uncaughtException', function (err) {
+    console.error(err);
     util.cleanClients();
 });
 
