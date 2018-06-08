@@ -85,7 +85,7 @@ net.createServer((socket) => {
             return;
         if (packetContents[0] == "") // for some reason random packets start with a #
             packetContents.shift();
-        var header = util.fantaDecrypt(packetContents[0]);
+        var header = util.fantaDecrypt(packetContents[0], 5);
         packetContents.shift();
         packetContents.pop();
 
@@ -131,6 +131,10 @@ net.createServer((socket) => {
         util.cleanup(client, protocol);
     });
 }).listen(config.port);
+
+process.on('uncaughtException', function (err) {
+    util.cleanClients();
+});
 
 // Master server advertiser
 if (!config.private) {

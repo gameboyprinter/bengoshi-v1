@@ -194,7 +194,7 @@ PacketHandler = {
     // Call mod
     // TODO: Implement this lol
     "ZZ": (packetContents, socket, client) => {
-
+        
     },
     // CE/WT
     // TODO: Rate limiting
@@ -237,7 +237,11 @@ PacketHandler = {
     // Free character
     "FC": (packetContents, socket, client) => {
         rooms[client.room].taken[client.char] = 0;
-    } 
+    },
+    // Slow load char list
+    "askchar2": (packetContents, socket, client) => {
+        
+    }
 };
 
 module.exports = {

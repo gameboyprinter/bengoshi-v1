@@ -4,17 +4,28 @@ const softVersion = "1.0.0";
 var clients = [];
 
 // Handles old AO1.X "encryption"
-function fantaDecrypt(data) {
+function fantaDecrypt(data, key) {
     var bytes = Buffer.from(data, "hex");
     if (bytes.length == 1 || bytes.length != (data.length / 2)) // Shitty heuristic, this will return the input if the input isnt all hex characters
         return data; // This allows "detection" of encrypted packets
-    key = 5; // fantacrypt constant
     var cleartext = "";
     bytes.forEach((byte) => {
         cleartext += String.fromCharCode(byte ^ ((key & 0xFFFF) >> 8));
         key = ((byte + key) * 53761) + 32618 // more fantacrypt constants
+        key &= 0xFFFF;
     });
     return cleartext;
+}
+
+function fantaEncrypt(data, key) {
+    var crypt = "";
+    for(var i = 0; i < data.length; i++){
+        var char = data.charCodeAt(i) ^ ((key & 0xFFFF) >> 8);
+        crypt += char.toString(16).toUpperCase();
+        key = ((char + key) * 53761) + 32618;
+        key &= 0xFFFF;
+    }
+    return crypt;
 }
 
 // Returns if a socket is connected or not
@@ -41,7 +52,10 @@ function broadcast(header, data, room) {
 function packetBuilder(header, packetContents) {
     var packet = header + "#";
     packetContents.forEach((datum) => {
-        packet += datum.toString() + "#";
+        if(datum != undefined)
+            packet += datum.toString() + "#";
+        else
+            packet += "#";
     });
     packet += "%";
     return packet;
@@ -77,8 +91,23 @@ function send(socket, header, data, ws) {
     }
 }
 
+function cleanClients() {
+    var newClients = [];
+    var counter = 0;
+    clients.forEach((client) => {
+        if(client.id != undefined){
+            client.id = counter;
+            newClients.push(client);
+            counter++;
+        }
+    });
+    delete clients;
+    clients = newClients;
+}
+
 // Disconnects a client
 function cleanup(client, protocol) {
+    cleanClients();
     if (protocol.rooms[client.room].taken[client.char])
         protocol.players--;
     protocol.rooms[client.room].taken[client.char] = 0;
@@ -121,7 +150,6 @@ function decodeWs(data, socket) {
 
 // Ban a player, update the config
 function ban(client, config) {
-    send(client.socket, "KB", [client.char], client.websocket);
     client.socket.end();
     config.bans.push({
         ip: client.socket.remoteAddress,
@@ -132,6 +160,8 @@ function ban(client, config) {
 
 module.exports = {
     fantaDecrypt: fantaDecrypt,
+    fantaEncrypt: fantaEncrypt,
+    cleanClients: cleanClients,
     isConnected: isConnected,
     broadcast: broadcast,
     send: send,
