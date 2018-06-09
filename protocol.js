@@ -2,7 +2,7 @@
 const fs = require("fs");
 const util = require("./util.js");
 const cmds = require("./commands.js");
-const config = JSON.parse(fs.readFileSync("./config.json"));
+var config = JSON.parse(fs.readFileSync("./config.json"));
 
 // Game state
 // TODO: Room state objects
@@ -59,7 +59,7 @@ PacketHandler = {
         if (util.players >= config.maxPlayers)
             socket.close();
         util.send(socket, "PN", [util.players, config.maxPlayers], client.websocket);
-        util.send(socket, "FL", ["fastloading", "noencryption", "yellowtext", "websockets", "customobjections", "deskmod"], client.websocket);
+        util.send(socket, "FL", ["fastloading", "noencryption", "yellowtext", "websockets", "customobjections", "deskmod", "flipping"], client.websocket);
         // No more encrypted packets after this
         // TODO: AO1 support
     },
@@ -112,6 +112,7 @@ PacketHandler = {
             rooms[client.room].taken[client.char] = 0;
         rooms[client.room].taken[packetContents[1]] = -1;
         client.char = packetContents[1];
+        delete client.pos;
         util.send(socket, "PV", [client.id, "CID", client.char], client.websocket); // Char pick success
     },
     // Keepalive heartbeat
@@ -124,6 +125,11 @@ PacketHandler = {
         if (client.mute) {
             util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
+        }
+        if(client.pos != undefined){
+            if(packetContents[5] != client.pos)
+                packetContents[12] = 1; // sprite flip
+            packetContents[5] = client.pos;
         }
         util.broadcast("MS", packetContents, client.room);
     },

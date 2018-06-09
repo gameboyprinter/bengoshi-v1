@@ -3,36 +3,35 @@ const util = require("./util.js");
 function parseCmd(cmd, args, socket, client, config, rooms) {
     switch (cmd) {
         case "/bglock":
-            if(client.moderator){
+            if (client.moderator) {
                 rooms[client.room].BGLock = !rooms[client.room].BGLock;
                 util.send(socket, "CT", ["Server", "Background lock toggled"], client.websocket);
             }
             break;
         case "/bg":
         case "/background":
-            if(args.length < 1)
-            {
+            if (args.length < 1) {
                 util.send(socket, "CT", ["Server", "/background (background)"], client.websocket);
             }
-            if(!rooms[client.room].BGLock || client.moderator){
+            if (!rooms[client.room].BGLock || client.moderator) {
                 var success = false;
                 config.backgrounds.forEach((bg) => {
-                    if(bg.toLowerCase() == args[0]){
+                    if (bg.toLowerCase() == args[0]) {
                         util.broadcast("BN", [args[0]], client.room);
                         rooms[client.room].background = args[0];
                         util.send(socket, "CT", ["Server", "Background changed to " + bg], client.websocket);
                         success = true;
                     }
                 });
-                if(!success)
+                if (!success)
                     util.send(socket, "CT", ["Server", "Not a valid background!"], client.websocket);
                 break;
             }
             util.send(socket, "CT", ["Server", "Background is locked"], client.websocket);
             break;
         case "/modpass":
-            if(args.length >= 1){
-                if(args[0] == config.modpass){
+            if (args.length >= 1) {
+                if (args[0] == config.modpass) {
                     util.send(socket, "CT", ["Server", "Correct password!"], client.websocket);
                     client.moderator = true;
                 }
@@ -204,7 +203,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
                 }
             });
             break;
-        case "/pos":
+        case "/getarea":
             util.send(client.socket, "CT", ["Server", "You are in Room " + client.room + ", " + config.rooms[client.room]], client.websocket);
             break;
         case "/w":
@@ -224,20 +223,52 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
                 }
             });
             break;
-            case "/roll":
+        case "/roll":
+            if (args.length < 1) {
+                util.send(socket, "CT", ["Server", "/roll (diesize)"], client.websocket);
+                break;
+            }
+            util.broadcast("CT", ["1d" + args[0], getRandomInt(1, parseInt(args[0]) + 1) + ""], client.room);
+            break;
+        case "/need":
+            if(args.length < 1){
+                util.send(socket, "CT", ["Server", "/need (message)"], client.websocket);
+                break;
+            }
+            for(var i = 0; i < rooms.length; i++){
+                util.broadcast("CT", ["LOOKING FOR", args[0]], i);
+            }
+            break;
+        case "/gm":
+            if(!client.moderator)
+                break;
+            else {
                 if(args.length < 1){
-                    util.send(socket, "CT", ["Server", "/roll (diesize)"], client.websocket);
+                    util.send(socket, "CT", ["Server", "/gm (message)"], client.websocket);
                     break;
                 }
-                util.broadcast("CT", ["1d" + args[0], getRandomInt(1, parseInt(args[0]) + 1) + ""], client.room);
-                break;
+                for(var i = 0; i < rooms.length; i++){
+                    util.broadcast("CT", ["[MODERATOR]", args[0]], i);
+                }
+            }
+        case "/pos":
+            if(args.length < 1){
+                util.send(socket, "CT", ["Server", "/pos (new position)"], client.websocket);
+            }
+            else {
+                var pos = args[0];
+                if(pos == "wit" || pos == "def" || pos == "jud" || pos == "hlp" || pos == "hld" || pos == "pro"){
+                    client.pos = pos;
+                }
+            }
+            break;
         default:
             util.send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
     }
 }
 
 function getRandomInt(min, max) {
-    if(min == NaN || max == NaN)
+    if (min == NaN || max == NaN)
         return -1;
     min = Math.ceil(min);
     max = Math.floor(max);
