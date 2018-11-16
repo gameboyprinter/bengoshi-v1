@@ -33,7 +33,6 @@ if (!fs.existsSync("config.json") && tsuFound) {
   var newConfig = {
     maxRepeats: 20,
     maxArgLength: 30,
-    maxBadPackets: 10,
     wsTime: 750,
     bans: [],
     mods: []
@@ -238,11 +237,10 @@ else if (!fs.existsSync("config.json")) {
       "hwid": "example"
     }],
     "mods": [
-      "::ffff:108.247.105.152"
+      "127.0.0.1"
     ],
     "maxRepeats": 15,
     "maxArgLength": 30,
-    "maxBadPackets": 10,
     "wsTime": 750,
     "songs": [{
         "name": "~stop.mp3"

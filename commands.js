@@ -14,7 +14,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
                 util.send(socket, "CT", ["Server", "/background (background)"], client.websocket);
             }
             if (!rooms[client.room].BGLock || client.moderator) {
-                var success = false;
+                let success = false;
                 config.backgrounds.forEach((bg) => {
                     if (bg.toLowerCase() == args[0]) {
                         util.broadcast("BN", [args[0]], client.room);
@@ -235,7 +235,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
                 util.send(socket, "CT", ["Server", "/need (message)"], client.websocket);
                 break;
             }
-            for(var i = 0; i < rooms.length; i++){
+            for(let i = 0; i < rooms.length; i++){
                 util.broadcast("CT", ["LOOKING FOR", args[0]], i);
             }
             break;
@@ -247,7 +247,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
                     util.send(socket, "CT", ["Server", "/gm (message)"], client.websocket);
                     break;
                 }
-                for(var i = 0; i < rooms.length; i++){
+                for(let i = 0; i < rooms.length; i++){
                     util.broadcast("CT", ["[MODERATOR]", args[0]], i);
                 }
             }
@@ -256,7 +256,7 @@ function parseCmd(cmd, args, socket, client, config, rooms) {
                 util.send(socket, "CT", ["Server", "/pos (new position)"], client.websocket);
             }
             else {
-                var pos = args[0];
+                let pos = args[0];
                 if(pos == "wit" || pos == "def" || pos == "jud" || pos == "hlp" || pos == "hld" || pos == "pro"){
                     client.pos = pos;
                 }

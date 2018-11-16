@@ -2,23 +2,23 @@
 const fs = require("fs");
 const util = require("./util.js");
 const cmds = require("./commands.js");
-var config = JSON.parse(fs.readFileSync("./config.json"));
+let config = JSON.parse(fs.readFileSync("./config.json"));
 
 // Game state
 // TODO: Room state objects
-var rooms = [];
+let rooms = [];
 
 // Initialize rooms
-var evidenceLists = [];
+let evidenceLists = [];
 if (!fs.existsSync("./evidence.json"))
     fs.writeFileSync("./evidence.json", "[]");
 else
     evidenceLists = JSON.parse(fs.readFileSync("./evidence.json"));
 
-var initEvidence = evidenceLists.length != config.rooms.length;
+let initEvidence = evidenceLists.length != config.rooms.length;
 if (initEvidence)
     evidenceLists = [];
-for (var i = 0; i < config.rooms.length; i++) {
+for (let i = 0; i < config.rooms.length; i++) {
     if (initEvidence)
         evidenceLists.push([]);
     rooms[i] = JSON.parse(JSON.stringify(config.rooms[i])); // Deep copy
@@ -38,7 +38,7 @@ function loopMusic(room) {
 
 // Finds room by name
 function isRoom(name) {
-    for (var i = 0; i < rooms.length; i++) {
+    for (let i = 0; i < rooms.length; i++) {
         if (rooms[i].name == name)
             return i;
     }
@@ -53,7 +53,7 @@ PacketHandler = {
             if (ban.hwid == packetContents[0])
                 socket.end();
         });
-        var hardware = packetContents[0];
+        let hardware = packetContents[0];
         client.hardware = hardware;
         util.send(socket, "ID", [hardware, "bengoshi", "v" + util.softVersion], client.websocket);
         if (util.players >= config.maxPlayers)
@@ -78,7 +78,7 @@ PacketHandler = {
     },
     // Request music
     "RM": (packetContents, socket, client) => {
-        var songNames = [];
+        let songNames = [];
         config.rooms.forEach((room) => {
             if (room.private) {
                 if (client.moderator)
@@ -139,10 +139,10 @@ PacketHandler = {
             util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
         }
-        var input = packetContents[1];
+        let input = packetContents[1];
         if (input.charAt(0) == "/") {
-            var args = input.split(" ");
-            var cmd = args[0];
+            let args = input.split(" ");
+            let cmd = args[0];
             args.shift();
             cmds.parseCmd(cmd, args, socket, client, config, rooms);
             return;
@@ -154,8 +154,8 @@ PacketHandler = {
     // And some are purely decorative (category titles)
     // All of that is handled here
     "MC": (packetContents, socket, client) => {
-        var exists = false;
-        var time = 0;
+        let exists = false;
+        let time = 0;
         config.songs.forEach((song) => {
             if (song.name == packetContents[0]) {
                 if (song.category)
@@ -172,12 +172,12 @@ PacketHandler = {
                 rooms[client.room].roomInterval = setInterval(loopMusic, time, client.room);
         }
         if (!exists) {
-            var newRoom = isRoom(packetContents[0]);
+            let newRoom = isRoom(packetContents[0]);
             if (newRoom == client.room)
                 return;
             if (newRoom != -1) {
                 if (rooms[newRoom].taken[client.char] == -1) {
-                    var newChar = rooms[client.room].taken.indexOf(0);
+                    let newChar = rooms[client.room].taken.indexOf(0);
                     if (newChar == -1) {
                         util.send(socket, "CT", ["Server", "That room is full!"]);
                         return;
@@ -222,7 +222,7 @@ PacketHandler = {
     },
     // Add evidence
     "PE": (packetContents, socket, client) => {
-        var evidence = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
+        let evidence = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
         evidenceLists[client.room].push(evidence);
         fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
         util.broadcast("LE", evidenceLists[client.room], client.room);
@@ -235,7 +235,7 @@ PacketHandler = {
     },
     // Edit evidence
     "EE": (packetContents, socket, client) => {
-        var id = packetContents[0];
+        let id = packetContents[0];
         packetContents.shift();
         evidenceLists[client.room][id] = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
         fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
@@ -247,8 +247,8 @@ PacketHandler = {
     },
     // Slow load char list
     "askchar2": (packetContents, socket, client) => {
-        var charList = [];
-        for (var i = 0; i < Math.min(10, config.characters.length); i++) {
+        let charList = [];
+        for (let i = 0; i < Math.min(10, config.characters.length); i++) {
             charList.push(i);
             charList.push(config.characters[i] + "&&0&&&0&");
         }
@@ -256,17 +256,17 @@ PacketHandler = {
     },
     // Slow load character batch request
     "AN": (packetContents, socket, client) => {
-        var charList = [];
-        var startAt = packetContents[0];
+        let charList = [];
+        let startAt = packetContents[0];
         startAt *= 10;
-        for (var i = startAt; i < Math.min(startAt + 10, config.characters.length); i++) {
+        for (let i = startAt; i < Math.min(startAt + 10, config.characters.length); i++) {
             charList.push(i);
             charList.push(config.characters[i] + "&&0&&&0&");
         }
         util.send(socket, "CI", charList, client.websocket);
         if (i == config.characters.length) {
-            var songList = [];
-            for (var i = 0; i < Math.min(10, config.songs.length); i++) {
+            let songList = [];
+            for (let i = 0; i < Math.min(10, config.songs.length); i++) {
                 songList.push(i);
                 songList.push(config.songs[i].name);
             }
@@ -275,10 +275,10 @@ PacketHandler = {
     },
     // Slow load music batch request
     "AM": (packetContents, socket, client) => {
-        var songList = [];
-        var startAt = packetContents[0];
+        let songList = [];
+        let startAt = packetContents[0];
         startAt *= 10;
-        for (var i = startAt; i < Math.min(startAt + 10, config.songs.length); i++) {
+        for (let i = startAt; i < Math.min(startAt + 10, config.songs.length); i++) {
             songList.push(i);
             songList.push(config.songs[i].name);
         }

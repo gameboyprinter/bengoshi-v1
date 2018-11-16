@@ -1,15 +1,15 @@
 // Just a few supporting functions to reduce code redundancy
 const fs = require("fs");
 const softVersion = "1.1.0";
-var clients = [];
-var players = 0;
+let clients = [];
+let players = 0;
 
 // Handles old AO1.X "encryption"
 function fantaDecrypt(data, key) {
-    var bytes = Buffer.from(data, "hex");
+    let bytes = Buffer.from(data, "hex");
     if (bytes.length == 1 || bytes.length != (data.length / 2)) // Shitty heuristic, this will return the input if the input isnt all hex characters
         return data; // This allows "detection" of encrypted packets
-    var cleartext = "";
+    let cleartext = "";
     bytes.forEach((byte) => {
         cleartext += String.fromCharCode(byte ^ ((key & 0xFFFF) >> 8));
         key = ((byte + key) * 53761) + 32618 // more fantacrypt constants
@@ -19,9 +19,9 @@ function fantaDecrypt(data, key) {
 }
 
 function fantaEncrypt(data, key) {
-    var crypt = "";
-    for(var i = 0; i < data.length; i++){
-        var char = data.charCodeAt(i) ^ ((key & 0xFFFF) >> 8);
+    let crypt = "";
+    for(let i = 0; i < data.length; i++){
+        let char = data.charCodeAt(i) ^ ((key & 0xFFFF) >> 8);
         crypt += char.toString(16).toUpperCase();
         key = ((char + key) * 53761) + 32618;
         key &= 0xFFFF;
@@ -49,7 +49,7 @@ function broadcast(header, data, room) {
 
 // Turns a header and array into a FantaPacket
 function packetBuilder(header, packetContents) {
-    var packet = header + "#";
+    let packet = header + "#";
     packetContents.forEach((datum) => {
         if(datum != undefined)
             packet += datum.toString() + "#";
@@ -72,7 +72,7 @@ function send(socket, header, data, ws) {
     }
     if (ws) {
         data = packetBuilder(header, data);
-        var frame = [];
+        let frame = [];
         frame.push(0x81); // text opcode
         if (data.length < 126)
             frame.push(data.length & 0x7F);
@@ -81,7 +81,7 @@ function send(socket, header, data, ws) {
             frame.push((data.length & 0xFF00) >> 8);
             frame.push((data.length & 0xFF));
         }
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             frame.push(data.charCodeAt(i));
         }
         socket.write(Buffer.from(frame));
@@ -91,7 +91,7 @@ function send(socket, header, data, ws) {
 }
 
 function recalculateIds(){
-    for(var i = 0; i < clients.length; i++){
+    for(let i = 0; i < clients.length; i++){
         clients[i].id = i;
     }
     players = clients.length;
@@ -106,11 +106,11 @@ function cleanup(client, protocol) {
 
 // Removes WebSocket encoding
 function decodeWs(data, socket) {
-    var payloadLength = 0;
-    var opcode = data[0] & 0xF;
-    var masked = (data[1] & 0x80) == 0x80;
-    var len = data[1] & 0x7F;
-    var maskPtr = 0;
+    let payloadLength = 0;
+    let opcode = data[0] & 0xF;
+    let masked = (data[1] & 0x80) == 0x80;
+    let len = data[1] & 0x7F;
+    let maskPtr = 0;
     if (opcode == 1) {
         if (len <= 125) {
             payloadLength = len;
@@ -122,13 +122,13 @@ function decodeWs(data, socket) {
             payloadLength = (data[2] << 56) | (data[3] << 48) | (data[4] << 40) | (data[5] << 32) | (data[6] << 24) | (data[7] << 16) | (data[8] << 8) | data[9];
             maskPtr = 10;
         }
-        var key = [data[maskPtr], data[maskPtr + 1], data[maskPtr + 2], data[maskPtr + 3]];
+        let key = [data[maskPtr], data[maskPtr + 1], data[maskPtr + 2], data[maskPtr + 3]];
         maskPtr += 4;
-        var unmasked = [payloadLength];
-        for (var i = 0; i < payloadLength; i++) {
+        let unmasked = [payloadLength];
+        for (let i = 0; i < payloadLength; i++) {
             unmasked[i] = data[i + maskPtr] ^ key[i % 4];
         }
-        var content = Buffer.from(unmasked).toString("utf8");
+        let content = Buffer.from(unmasked).toString("utf8");
         return content;
     } else if (opcode == 9) {
         data[0] = (data[0] & 0xF0) || 0xA;
