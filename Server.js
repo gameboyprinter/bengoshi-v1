@@ -135,6 +135,6 @@ if (!config.private) {
     let client = new net.Socket();
     client.connect(config.msport, config.msip, () => {
         console.log("Master server connection established");
-        client.write(util.packetBuilder("SCC", [`${config.port}&1`, config.name, config.description, `bengoshi v${util.softVersion}`]));
+        client.write(util.packetBuilder("SCC", [`${config.port}&${config.port}`, config.name, config.description, `bengoshi v${util.softVersion}`]));
     });
 }
