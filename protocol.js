@@ -298,6 +298,9 @@ PacketHandler = {
     // AO1.x Disconnect, don't need to do anything
     "DC": (packetContents, socket, client) => {
         
+    },
+    "PW": (packetContents, socket, client) => {
+        // TODO: This
     }
 };
 
