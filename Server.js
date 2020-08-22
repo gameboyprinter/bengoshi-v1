@@ -41,7 +41,7 @@ net.createServer((socket) => {
         oocmute: false,
         cemute: false,
         mute: false,
-        room: 0,
+        area: 0,
         websocket: false,
         name: socketName,
         socket: socket,

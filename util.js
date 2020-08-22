@@ -38,10 +38,10 @@ function isConnected(socketName) {
     return false;
 }
 
-// Send a FantaPacket to every client (within a room)
-function broadcast(header, data, room) {
+// Send a FantaPacket to every client (within a area)
+function broadcast(header, data, area) {
     clients.forEach((client) => {
-        if (client.room == room) {
+        if (client.area == area) {
             send(client.socket, header, data, client.websocket);
         }
     });
@@ -99,7 +99,7 @@ function recalculateIds(){
 
 // Disconnects a client
 function cleanup(client, protocol) {
-    protocol.rooms[client.room].taken[client.char] = 0;
+    protocol.areas[client.area].taken[client.char] = 0;
     clients.splice(client.id, 1);
     recalculateIds();
 }

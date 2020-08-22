@@ -51,9 +51,9 @@ if (!fs.existsSync("config.json") && tsuFound) {
   newConfig.backgrounds = backgrounds;
   newConfig.characters = characters;
 
-  // Music and rooms are a little different
+  // Music and areas are a little different
   var songs = [];
-  var rooms = [];
+  var areas = [];
 
   music.forEach((category) => {
     songs.push({
@@ -71,7 +71,7 @@ if (!fs.existsSync("config.json") && tsuFound) {
   newConfig.songs = songs;
 
   areas.forEach((area) => {
-    rooms.push({
+    areas.push({
       name: area.area,
       background: area.background,
       BGLock: area.bglock,
@@ -79,7 +79,7 @@ if (!fs.existsSync("config.json") && tsuFound) {
       private: false,
     });
   });
-  newConfig.rooms = rooms;
+  newConfig.areas = areas;
 
   fs.writeFileSync("config.json", JSON.stringify(newConfig, null, 2));
   console.log("New config generated. Restart server to use it!");
@@ -114,7 +114,7 @@ else if (!fs.existsSync("config.json") && sDFound) {
   newConfig.motd = "Welcome to the server!";
    
   var backgrounds = [];
-  var rooms = [];
+  var areas = [];
   var songs = [];
   var characters = [];
 
@@ -137,7 +137,7 @@ else if (!fs.existsSync("config.json") && sDFound) {
   });
 
   for(var i = 1; i <= areas.Areas.number; i++){
-    rooms.push({
+    areas.push({
       name: areas.Areas[i],
       background: areas.filename[i],
       BGLock: false,
@@ -152,7 +152,7 @@ else if (!fs.existsSync("config.json") && sDFound) {
   }
 
   newConfig.backgrounds = backgrounds;
-  newConfig.rooms = rooms;
+  newConfig.areas = areas;
   newConfig.songs = songs;
   newConfig.characters = characters;
 
@@ -196,7 +196,7 @@ else if (!fs.existsSync("config.json")) {
       "gs4",
       "mlp"
     ],
-    "rooms": [{
+    "areas": [{
         "name": "Lobby",
         "background": "default",
         "BGLock": true,
@@ -250,7 +250,7 @@ else if (!fs.existsSync("config.json")) {
         "category": true
       },
       {
-        "name": "01_turnabout_courtroom_-_prologue.mp3",
+        "name": "01_turnabout_courtarea_-_prologue.mp3",
         "length": 40.150204
       },
       {

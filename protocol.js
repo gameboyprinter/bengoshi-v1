@@ -5,41 +5,41 @@ const cmds = require("./commands.js");
 let config = JSON.parse(fs.readFileSync("./config.json"));
 
 // Game state
-// TODO: Room state objects
-let rooms = [];
+// TODO: area state objects
+let areas = [];
 
-// Initialize rooms
+// Initialize areas
 let evidenceLists = [];
 if (!fs.existsSync("./evidence.json"))
     fs.writeFileSync("./evidence.json", "[]");
 else
     evidenceLists = JSON.parse(fs.readFileSync("./evidence.json"));
 
-let initEvidence = evidenceLists.length != config.rooms.length;
+let initEvidence = evidenceLists.length != config.areas.length;
 if (initEvidence)
     evidenceLists = [];
-for (let i = 0; i < config.rooms.length; i++) {
+for (let i = 0; i < config.areas.length; i++) {
     if (initEvidence)
         evidenceLists.push([]);
-    rooms[i] = JSON.parse(JSON.stringify(config.rooms[i])); // Deep copy
-    rooms[i].evidence = evidenceLists[i];
-    rooms[i].taken = Array.apply(null, Array(config.characters.length)).map(Number.prototype.valueOf, 0);
-    rooms[i].song = "~stop.mp3";
+    areas[i] = JSON.parse(JSON.stringify(config.areas[i])); // Deep copy
+    areas[i].evidence = evidenceLists[i];
+    areas[i].taken = Array.apply(null, Array(config.characters.length)).map(Number.prototype.valueOf, 0);
+    areas[i].song = "~stop.mp3";
 }
 
 function reloadConf(){
     config = JSON.parse(fs.readFileSync("./config.json"));
 }
 
-// This function is called on an interval, per room, to loop music.
-function loopMusic(room) {
-    util.broadcast("MC", [rooms[room].song, -1], room);
+// This function is called on an interval, per area, to loop music.
+function loopMusic(area) {
+    util.broadcast("MC", [areas[area].song, -1], area);
 }
 
-// Finds room by name
-function isRoom(name) {
-    for (let i = 0; i < rooms.length; i++) {
-        if (rooms[i].name == name)
+// Finds area by name
+function isarea(name) {
+    for (let i = 0; i < areas.length; i++) {
+        if (areas[i].name == name)
             return i;
     }
     return -1;
@@ -79,12 +79,12 @@ PacketHandler = {
     // Request music
     "RM": (packetContents, socket, client) => {
         let songNames = [];
-        config.rooms.forEach((room) => {
-            if (room.private) {
+        config.areas.forEach((area) => {
+            if (area.private) {
                 if (client.moderator)
-                    songNames.push(room.name);
+                    songNames.push(area.name);
             } else
-                songNames.push(room.name);
+                songNames.push(area.name);
         });
         config.songs.forEach((song) => {
             songNames.push(song.name);
@@ -93,24 +93,24 @@ PacketHandler = {
     },
     // Request data (taken chars, oppass, loading done)
     "RD": (packetContents, socket, client) => {
-        util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
+        util.send(socket, "CharsCheck", areas[client.area].taken, client.websocket);
         util.send(socket, "OPPASS", ["42"], client.websocket);
         util.send(socket, "DONE", [], client.websocket);
         util.send(socket, "CT", ["Server", config.motd], client.websocket); // Send MOTD
-        util.send(socket, "LE", rooms[client.room].evidence, client.websocket); // Send evidence
-        util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket); // Send song
-        util.send(socket, "BN", [rooms[client.room].background], client.websocket); // Send background
+        util.send(socket, "LE", areas[client.area].evidence, client.websocket); // Send evidence
+        util.send(socket, "MC", [areas[client.area].song, -1], client.websocket); // Send song
+        util.send(socket, "BN", [areas[client.area].background], client.websocket); // Send background
         if (client.software == "TNLIB") {
             util.send(socket, "CT", ["Dear TNC User", "Consider using the vanilla client."], client.websocket);
         }
     },
     // Change character
     "CC": (packetContents, socket, client) => {
-        if (rooms[client.room].taken[packetContents[1]] == -1)
+        if (areas[client.area].taken[packetContents[1]] == -1)
             return;
         if (client.char != undefined)
-            rooms[client.room].taken[client.char] = 0;
-        rooms[client.room].taken[packetContents[1]] = -1;
+            areas[client.area].taken[client.char] = 0;
+        areas[client.area].taken[packetContents[1]] = -1;
         client.char = packetContents[1];
         delete client.pos;
         util.send(socket, "PV", [client.id, "CID", client.char], client.websocket); // Char pick success
@@ -131,7 +131,7 @@ PacketHandler = {
                 packetContents[12] = 1; // sprite flip
             packetContents[5] = client.pos;
         }
-        util.broadcast("MS", packetContents, client.room);
+        util.broadcast("MS", packetContents, client.area);
     },
     // OOC Chat
     "CT": (packetContents, socket, client) => {
@@ -144,10 +144,10 @@ PacketHandler = {
             let args = input.split(" ");
             let cmd = args[0];
             args.shift();
-            cmds.parseCmd(cmd, args, socket, client, config, rooms);
+            cmds.parseCmd(cmd, args, socket, client, config, areas);
             return;
         }
-        util.broadcast("CT", packetContents, client.room);
+        util.broadcast("CT", packetContents, client.area);
     },
     // Music change
     // Some music items are used to change areas, however
@@ -165,35 +165,35 @@ PacketHandler = {
             }
         });
         if (exists) {
-            rooms[client.room].song = packetContents[0];
-            util.broadcast("MC", packetContents, client.room);
-            clearInterval(rooms[client.room].roomInterval);
-            if (rooms[client.room].song != "~stop.mp3" && time > 0)
-                rooms[client.room].roomInterval = setInterval(loopMusic, time, client.room);
+            areas[client.area].song = packetContents[0];
+            util.broadcast("MC", packetContents, client.area);
+            clearInterval(areas[client.area].areaInterval);
+            if (areas[client.area].song != "~stop.mp3" && time > 0)
+                areas[client.area].areaInterval = setInterval(loopMusic, time, client.area);
         }
         if (!exists) {
-            let newRoom = isRoom(packetContents[0]);
-            if (newRoom == client.room)
+            let newarea = isarea(packetContents[0]);
+            if (newarea == client.area)
                 return;
-            if (newRoom != -1) {
-                if (rooms[newRoom].taken[client.char] == -1) {
-                    let newChar = rooms[client.room].taken.indexOf(0);
+            if (newarea != -1) {
+                if (areas[newarea].taken[client.char] == -1) {
+                    let newChar = areas[client.area].taken.indexOf(0);
                     if (newChar == -1) {
-                        util.send(socket, "CT", ["Server", "That room is full!"]);
+                        util.send(socket, "CT", ["Server", "That area is full!"]);
                         return;
                     }
                     client.char = newChar;
                     util.send(socket, "PV", [client.id, "CID", client.char], client.websocket);
                     util.send(socket, "CT", ["Server", "Your character was taken, so you have been assigned to " + config.characters[newChar]], client.websocket);
                 }
-                rooms[client.room].taken[client.char] = 0;
-                rooms[newRoom].taken[client.char] = -1;
-                client.room = newRoom;
-                util.send(socket, "CT", ["Server", "You moved to room number " + client.room + ", " + packetContents[0]], client.websocket);
-                util.send(socket, "BN", [rooms[client.room].background], client.websocket);
-                util.send(socket, "LE", rooms[client.room].evidence, client.websocket);
-                util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket);
-                util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
+                areas[client.area].taken[client.char] = 0;
+                areas[newarea].taken[client.char] = -1;
+                client.area = newarea;
+                util.send(socket, "CT", ["Server", "You moved to area number " + client.area + ", " + packetContents[0]], client.websocket);
+                util.send(socket, "BN", [areas[client.area].background], client.websocket);
+                util.send(socket, "LE", areas[client.area].evidence, client.websocket);
+                util.send(socket, "MC", [areas[client.area].song, -1], client.websocket);
+                util.send(socket, "CharsCheck", areas[client.area].taken, client.websocket);
                 util.players++;
             }
         }
@@ -211,39 +211,39 @@ PacketHandler = {
             util.send(socket, "CT", ["Server", "You are muted!"], client.websocket);
             return;
         }
-        if (rooms[client.room].CELock)
+        if (areas[client.area].CELock)
             return;
-        util.broadcast("RT", packetContents, client.room);
+        util.broadcast("RT", packetContents, client.area);
     },
     // Judge HP bars
     // TODO: Check player position
     "HP": (packetContents, socket, client) => {
-        util.broadcast("HP", packetContents, client.room);
+        util.broadcast("HP", packetContents, client.area);
     },
     // Add evidence
     "PE": (packetContents, socket, client) => {
         let evidence = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
-        evidenceLists[client.room].push(evidence);
+        evidenceLists[client.area].push(evidence);
         fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
-        util.broadcast("LE", evidenceLists[client.room], client.room);
+        util.broadcast("LE", evidenceLists[client.area], client.area);
     },
     // Remove evidence
     "DE": (packetContents, socket, client) => {
-        evidenceLists[client.room].splice(packetContents[0], 1);
+        evidenceLists[client.area].splice(packetContents[0], 1);
         fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
-        util.broadcast("LE", evidenceLists[client.room], client.room);
+        util.broadcast("LE", evidenceLists[client.area], client.area);
     },
     // Edit evidence
     "EE": (packetContents, socket, client) => {
         let id = packetContents[0];
         packetContents.shift();
-        evidenceLists[client.room][id] = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
+        evidenceLists[client.area][id] = packetContents[0] + "&" + packetContents[1] + "&" + packetContents[2];
         fs.writeFileSync("./evidence.json", JSON.stringify(evidenceLists));
-        util.broadcast("LE", evidenceLists[client.room], client.room);
+        util.broadcast("LE", evidenceLists[client.area], client.area);
     },
     // Free character
     "FC": (packetContents, socket, client) => {
-        rooms[client.room].taken[client.char] = 0;
+        areas[client.area].taken[client.char] = 0;
     },
     // Slow load char list
     "askchar2": (packetContents, socket, client) => {
@@ -283,13 +283,13 @@ PacketHandler = {
             songList.push(config.songs[i].name);
         }
         if (startAt > config.songs.length) {
-            util.send(socket, "CharsCheck", rooms[client.room].taken, client.websocket);
+            util.send(socket, "CharsCheck", areas[client.area].taken, client.websocket);
             util.send(socket, "OPPASS", ["42"], client.websocket);
             util.send(socket, "DONE", [], client.websocket);
             util.send(socket, "CT", ["Server", config.motd], client.websocket); // Send MOTD
-            util.send(socket, "LE", rooms[client.room].evidence, client.websocket); // Send evidence
-            util.send(socket, "MC", [rooms[client.room].song, -1], client.websocket); // Send song
-            util.send(socket, "BN", [rooms[client.room].background], client.websocket); // Send background
+            util.send(socket, "LE", areas[client.area].evidence, client.websocket); // Send evidence
+            util.send(socket, "MC", [areas[client.area].song, -1], client.websocket); // Send song
+            util.send(socket, "BN", [areas[client.area].background], client.websocket); // Send background
         }
         else{
             util.send(socket, "EM", songList, client.websocket);
@@ -306,6 +306,6 @@ PacketHandler = {
 
 module.exports = {
     PacketHandler: PacketHandler,
-    rooms: rooms,
+    areas: areas,
     reloadConf: reloadConf
 };
