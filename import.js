@@ -1,6 +1,5 @@
 const fs = require("fs");
 const yml = require("js-yaml");
-const ini = require("@jedmao/ini-parser");
 
 var tsuFound =
   fs.existsSync("config/") &&
@@ -9,16 +8,6 @@ var tsuFound =
   fs.existsSync("config/config.yaml") &&
   fs.existsSync("config/backgrounds.yaml") &&
   fs.existsSync("config/music.yaml");
-
-var sDFound =
-  fs.existsSync("base/") &&
-  fs.existsSync("base/banlist.txt") &&
-  fs.existsSync("base/HDbanlist.txt") &&
-  fs.existsSync("base/masterserver.ini") &&
-  fs.existsSync("base/musiclist.txt") &&
-  fs.existsSync("base/settings.ini") &&
-  fs.existsSync("base/scene/AAOPublic2/init.ini") &&
-  fs.existsSync("base/scene/AAOPublic2/areas.ini");
 
 if (!fs.existsSync("config.json") && tsuFound) {
   console.log("tsuserver config directory detected, entering import mode.");
@@ -53,7 +42,7 @@ if (!fs.existsSync("config.json") && tsuFound) {
 
   // Music and areas are a little different
   var songs = [];
-  var areas = [];
+  var newConfigAreas = [];
 
   music.forEach((category) => {
     songs.push({
@@ -71,7 +60,7 @@ if (!fs.existsSync("config.json") && tsuFound) {
   newConfig.songs = songs;
 
   areas.forEach((area) => {
-    areas.push({
+    newConfigAreas.push({
       name: area.area,
       background: area.background,
       BGLock: area.bglock,
@@ -79,87 +68,13 @@ if (!fs.existsSync("config.json") && tsuFound) {
       private: false,
     });
   });
-  newConfig.areas = areas;
+  newConfig.areas = newConfigAreas;
 
   fs.writeFileSync("config.json", JSON.stringify(newConfig, null, 2));
   console.log("New config generated. Restart server to use it!");
   process.exit(0);
 }
-else if (!fs.existsSync("config.json") && sDFound) {
-  console.log("serverD config directory detected, entering import mode.");
 
-  var settings = ini.parse(fs.readFileSync("base/settings.ini").toString().replace(new RegExp("(?<!\r)\n", "g"), "\r\n"));
-  var musiclist = fs.readFileSync("base/musiclist.txt").toString().replace(new RegExp("(?<!\r)\n", "g"), "\r\n");
-  var masterserver = ini.parse(fs.readFileSync("base/masterserver.ini").toString().replace(new RegExp("(?<!\r)\n", "g"), "\r\n"));
-  var areas = ini.parse(fs.readFileSync("base/scene/AAOPublic2/areas.ini").toString().replace(new RegExp("(?<!\r)\n", "g"), "\r\n"));
-  var scene = ini.parse(fs.readFileSync("base/scene/AAOPublic2/init.ini").toString().replace(new RegExp("(?<!\r)\n", "g"), "\r\n"));
-
-  var newConfig = {
-    maxRepeats: 20,
-    maxArgLength: 30,
-    maxBadPackets: 10,
-    wsTime: 750,
-    bans: [],
-    mods: []
-  };
-
-  newConfig.port = settings.net.port;
-  newConfig.msip = masterserver.list[0];
-  newConfig.msport = 27016;
-  newConfig.private = !settings.net.public;
-  newConfig.maxPlayers = scene.chars.number;
-  newConfig.modpass = settings.net.oppassword;
-  newConfig.name = settings.server.name;
-  newConfig.description = settings.server.desc;
-  newConfig.motd = "Welcome to the server!";
-
-  var backgrounds = [];
-  var areas = [];
-  var songs = [];
-  var characters = [];
-
-  musiclist.split("\r\n").forEach((song) => {
-    song = song.split("*")[0];
-    if (!(song.charAt(0) == ">")) {
-      if (song.substr(0, 3) == "---") {
-        songs.push({
-          name: song,
-          category: true
-        });
-      }
-      else {
-        songs.push({
-          name: song,
-          length: 0
-        });
-      }
-    }
-  });
-
-  for (var i = 1; i <= areas.Areas.number; i++) {
-    areas.push({
-      name: areas.Areas[i],
-      background: areas.filename[i],
-      BGLock: false,
-      CELock: false,
-      private: areas.hidden[i] == 1
-    });
-    backgrounds.push(areas.filename[i]);
-  }
-
-  for (var i = 0; i < scene.chars.number; i++) {
-    characters[i] = scene.chars[i];
-  }
-
-  newConfig.backgrounds = backgrounds;
-  newConfig.areas = areas;
-  newConfig.songs = songs;
-  newConfig.characters = characters;
-
-  fs.writeFileSync("config.json", JSON.stringify(newConfig, null, 2));
-  console.log("New config generated. Restart server to use it!");
-  process.exit(0);
-}
 else if (!fs.existsSync("config.json")) {
   var defaultConfig = {
     "port": 27016,

@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "AO2 Server",
   "dependencies": {
-    "@jedmao/ini-parser": "^0.2.4",
     "js-yaml": "^3.14.0"
   },
   "devDependencies": {},
