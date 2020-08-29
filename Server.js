@@ -12,7 +12,7 @@ const util = require("./util.js");
 
 let currentID = 0;
 
-function reloadConf(){
+function reloadConf() {
     config = JSON.parse(fs.readFileSync("./config.json"));
     protocol.reloadConf();
 }
@@ -55,7 +55,7 @@ net.createServer((socket) => {
     socket.on("data", (data) => {
         if (data.length == 0)
             return;
-        
+        console.log("Got data")
         let packetContents;
         let allPackets;
 
@@ -63,7 +63,7 @@ net.createServer((socket) => {
             let content = util.decodeWs(data, socket);
             if (content == null)
                 return;
-           allPackets = content.split("%");
+            allPackets = content.split("%");
         }
 
         // If the client isn't a confirmed WebSocket connection
@@ -105,14 +105,14 @@ net.createServer((socket) => {
             let header = util.fantaDecrypt(packetContents[0], 5);
             packetContents.shift();
             packetContents.pop();
-    
+
             if (protocol.PacketHandler[header] == undefined) {
                 console.log("Unimplemented packet: " + header);
                 console.log(packetContents);
                 console.log(socketName);
                 return;
             }
-    
+
             protocol.PacketHandler[header](packetContents, socket, client);
         });
     });
