@@ -42,7 +42,7 @@ if (!fs.existsSync("config.json") && tsuFound) {
 
   // Music and areas are a little different
   var songs = [];
-  var areas = [];
+  var newConfigAreas = [];
 
   music.forEach((category) => {
     songs.push({
@@ -60,7 +60,7 @@ if (!fs.existsSync("config.json") && tsuFound) {
   newConfig.songs = songs;
 
   areas.forEach((area) => {
-    areas.push({
+    newConfigAreas.push({
       name: area.area,
       background: area.background,
       BGLock: area.bglock,
@@ -68,12 +68,15 @@ if (!fs.existsSync("config.json") && tsuFound) {
       private: false,
     });
   });
-  newConfig.areas = areas;
+  newConfig.areas = newConfigAreas;
 
   fs.writeFileSync("config.json", JSON.stringify(newConfig, null, 2));
   console.log("New config generated. Restart server to use it!");
   process.exit(0);
 }
+
+
+
 else if (!fs.existsSync("config.json")) {
   var defaultConfig = {
     "port": 27016,
