@@ -1,8 +1,6 @@
 # bengoshi
 simple and good ao2 server
 
-licensed AGPL (you know who you are)
-
 features
 ---
 - automatic spam bans (configurable)
