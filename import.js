@@ -75,8 +75,6 @@ if (!fs.existsSync("config.json") && tsuFound) {
   process.exit(0);
 }
 
-
-
 else if (!fs.existsSync("config.json")) {
   var defaultConfig = {
     "port": 27016,
