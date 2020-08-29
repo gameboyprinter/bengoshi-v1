@@ -55,7 +55,6 @@ net.createServer((socket) => {
     socket.on("data", (data) => {
         if (data.length == 0)
             return;
-        console.log("Got data")
         let packetContents;
         let allPackets;
 
