@@ -1,10 +1,10 @@
 // All the packet handling and game state (that is not user-specific) takes place here
 const fs = require("fs");
 const util = require("./util.js");
-const cmds = require("./commands.js");
-const background = require("./commands/background.js");
-let config = JSON.parse(fs.readFileSync("./config.json"));
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+let config = JSON.parse(fs.readFileSync("./config.json"));
+
 // Game state
 // TODO: area state objects
 let areas = [];
@@ -145,15 +145,18 @@ PacketHandler = {
             let args = input.split(" ");
             let cmd = args[0].substring(1);
             args.shift();
-
+            let foundCommand = false
             for (const file of commandFiles) {
                 const command = require(`./commands/${file}`)
                 if (command.name.includes(cmd)) {
+                    foundCommand = true
                     command.respond(cmd, args, socket, client, config, areas)
-                    console.log(`Command: ${cmd}, file: ${file}`)
+                    break
                 }
             }
-            // cmds.parseCmd(cmd, args, socket, client, config, areas);
+            if (foundCommand === false) {
+                util.send(socket, "CT", ["Server", "Invalid Command"], client.websocket);
+            }
             return;
         }
         util.broadcast("CT", packetContents, client.area);

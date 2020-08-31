@@ -6,7 +6,6 @@ if (!fs.existsSync("./config.json")) {
     while (true); // Hang, tsuimporter.js will close the process
 }
 let config = JSON.parse(fs.readFileSync("./config.json"));
-const cmds = require("./commands.js");
 const protocol = require("./protocol.js");
 const util = require("./util.js");
 
